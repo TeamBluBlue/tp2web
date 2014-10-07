@@ -117,6 +117,6 @@ window.addEventListener('DOMContentLoaded', function() {
 		// Le chargement de cet API implique le chargement d'autres APIs liés de manière asynchrone;
 		// l'élément "body" doit exister.
 		com.dinfogarneau.cours526.chargerDonneesZap();
-		com.dinfogarneau.cours526.chargerScriptAsync('https://maps.googleapis.com/maps/api/js?sensor=true&callback=com.dinfogarneau.cours526.apiGoogleMapCharge', null);
+		com.dinfogarneau.cours526.chargerScriptAsync('https://maps.googleapis.com/maps/api/js?sensor=true&callback=com.dinfogarneau.cours526.apiGoogleMapCharge&libraries=geometry', null);
 		com.dinfogarneau.cours526.chargerScriptAsync('js/async.js', null);
 	}, false);
