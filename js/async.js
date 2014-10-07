@@ -5,6 +5,8 @@ cdc.traitementPostChargement = function() {
 	console.log('Traitement post-chargement.');
 	// Appel de la fonction qui initialise la carte.
 	this.initCarte();
+	cdc.utilisateur = this.ajouterPlacemark(null,"utilisateur");
+	this.afficherReperesCarte();
 }
 // Référence à la carte Google (variable globale).
 cdc.carte = {};
@@ -12,7 +14,7 @@ cdc.carte = {};
 cdc.latDefaut = 46.876423;
 cdc.longDefaut = -71.190285;
 // Référence à la carte Google (variable globale).
-cdc.positionUtilisateur = null;
+cdc.utilisateur = {};
 cdc.initCarte = function() {
 	
 	// Object JSON pour les options de la carte (sans la position initiale).
@@ -37,7 +39,6 @@ cdc.initCarte = function() {
 		var positionInit = new google.maps.LatLng(this.latDefaut, this.longDefaut);
 		// Centrage de la carte sur la bonne coordonnée.
 		cdc.carte.setCenter(positionInit);
-		cdc.afficherReperesCarte();
 	}
 }  // Fin de la fonction "initCarte"
 
@@ -45,37 +46,29 @@ cdc.initCarte = function() {
 cdc.getCurrentPositionSuccess = function (position) {	
 	// Utilisation de la position de l'utilisateur.
 	console.log('Position obtenue : ' + position.coords.latitude + ', ' + position.coords.longitude);
-	cdc.positionUtilisateur = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-	// Centrage de la carte sur la bonne coordonnée.
-	cdc.carte.setCenter(cdc.positionUtilisateur);
-	cdc.ajouterPlacemark(cdc.positionUtilisateur,"utilisateur");
-	cdc.afficherReperesCarte();
+	var position = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+	cdc.carte.setCenter(position);
+	cdc.setPositionUtilisateur(position);
 }
 
 // Fonction appelée lors de l'échec (refus ou problème) de la récupération de la position.
 cdc.getCurrentPositionError = function (erreur) {	
 	// Utilisation de la position par défaut.
 	console.log('Utilisation de la position par défaut.');
-	cdc.positionUtilisateur = new google.maps.LatLng(cdc.latDefaut, cdc.longDefaut);
-	// Centrage de la carte sur la bonne coordonnée.
-	cdc.carte.setCenter(cdc.positionUtilisateur);
-	cdc.ajouterPlacemark(cdc.positionUtilisateur,"utilisateur");
-	cdc.afficherReperesCarte();
+	var position = new google.maps.LatLng(cdc.latDefaut, cdc.longDefaut);
+	cdc.carte.setCenter(position);
+	cdc.setPositionUtilisateur(position);	
 }
 
 // Fonction responsable d'afficher les repères sur la carte.
 cdc.afficherReperesCarte = function() {
 	// Parcours des repères.
-	for (var i=0; i < cdc.reperes.length-1; i++) {
+	for (var i=0; i < cdc.reperes.json.length-1; i++) {
 		// Position du repère.
-		var posRepere = new google.maps.LatLng(cdc.reperes[i].lat, cdc.reperes[i].long);
-		var typeRepere = "zap";
-		if(google.maps.geometry.spherical.computeDistanceBetween(posRepere,cdc.positionUtilisateur) < 5000)
-		{
-			typeRepere = "zap-proche";
-		}
+		var posRepere = new google.maps.LatLng(cdc.reperes.json[i].lat, cdc.reperes.json[i].long);
+
 		// Création du repère sur la carte.
-		this.ajouterPlacemark(posRepere, typeRepere);
+		cdc.reperes.placemarks.push(this.ajouterPlacemark(posRepere, "zap"));
 	}
 }
 cdc.ajouterPlacemark = function(position, type) {
@@ -85,12 +78,23 @@ cdc.ajouterPlacemark = function(position, type) {
 		case "zap":
 			options.icon="images/wifi.png";
 			break;
-		case "zap-proche":
-			options.icon="images/wifi_proche.png";
-			break;
 		case "utilisateur":
 			options.icon="images/smiley_happy.png";
 			break;
-	}	
-	var repere = new google.maps.Marker( options );
+	}
+	return new google.maps.Marker(options);
+}
+cdc.setPositionUtilisateur = function(position) {
+	cdc.utilisateur.setPosition(position);
+	for (var i=0; i < cdc.reperes.placemarks.length-1; i++) {
+		var repere = cdc.reperes.placemarks[i];
+		if(google.maps.geometry.spherical.computeDistanceBetween(repere.getPosition(), cdc.utilisateur.getPosition())<5000)
+		{
+			repere.setIcon("images/wifi_proche.png");
+		}
+		else
+		{
+			repere.setIcon("images/wifi.png");
+		}
+	}
 }
