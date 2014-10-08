@@ -15,12 +15,14 @@ foreach($xml->Document->Folder->Placemark as $placemark)
 	$zapNom = $placemark->name;
 	$zapLong = trim($coordonnees[0]);
 	$zapLat = trim($coordonnees[1]);
-
-	echo "\t{\n";
-		echo "\t\t\"nom\": \"$zapNom\",\n";
-		echo "\t\t\"lat\": \"$zapLat\",\n";
-		echo "\t\t\"long\": \"$zapLong\"\n";
-	echo "\t},\n";
+	if(!empty($zapLat) && !empty($zapLong))
+	{
+		echo "\t{\n";
+			echo "\t\t\"nom\": \"$zapNom\",\n";
+			echo "\t\t\"lat\": \"$zapLat\",\n";
+			echo "\t\t\"long\": \"$zapLong\"\n";
+		echo "\t},\n";
+	}
 }
 echo "{}]\n";
 ?>
