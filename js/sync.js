@@ -24,50 +24,57 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 
 		// Fonction contrôlant le chargement asynchrone de divers éléments.
 		"controleurChargement" : function (nouvElemCharge) {
+			var cdc = com.dinfogarneau.cours526;
+
 			console.log('controleurChargement: Nouvel élément chargé "' + nouvElemCharge + '".');
 			// Est-ce que c'est un élément dont le chargement doit être contrôlé ?
-			if (typeof this.elementsCharges[nouvElemCharge] != "undefined") {
+			if (typeof cdc.elementsCharges[nouvElemCharge] != "undefined") {
 				// Chargement effectué pour cet élément.
-				this.elementsCharges[nouvElemCharge] = true;
+				cdc.elementsCharges[nouvElemCharge] = true;
 				// Est-ce que tous les éléments sont chargés ?
 				var tousCharge = true;
-				for (var elem in this.elementsCharges) {
-					if ( ! this.elementsCharges[elem] )
+				for (var elem in cdc.elementsCharges) {
+					if ( ! cdc.elementsCharges[elem] )
 						tousCharge = false;
 				}
 				// Si tous les éléments ont été chargés, appel de la fonction qui
 				// fait le traitement post-chargement.
 				if (tousCharge) {
 					console.log('controleurChargement: Tous les éléments ont été chargés.');
-					this.traitementPostChargement();
+					cdc.traitementPostChargement();
 				} else {
 					console.log('controleurChargement: Il reste encore des éléments à charger.');
 				}
 			}
 		},
-		"xhr" : {},
+		"xhrZap" : {},
+		"xhrArr" : {},
 		"reperes" : {
 			"json" : {},
 			"placemarks" : []
 		},
 		"chargerDonneesZap" : function () {
+			var cdc = com.dinfogarneau.cours526;
 			// Création de l'objet XMLHttpRequest.
-			this.xhr = new XMLHttpRequest();
+			cdc.xhrZap = new XMLHttpRequest();
+
+			var xhr = cdc.xhrZap;
 
 			// Fonction JavaScript à exécuter lorsque l'état de la requête HTTP change.
-			this.xhr.onreadystatechange = this.chargerDonneesZapCallback;
+			xhr.onreadystatechange = cdc.chargerDonneesZapCallback;
 			
 			// Préparation de la requête HTTP-GET en mode asynchrone (true).
-			this.xhr.open('GET', 'ajax/ajax-json-get.php', true);
+			xhr.open('GET', 'ajax/ajax-json-get.php', true);
 			
 			// Envoie de la requête au serveur en lui passant null (aucun contenu);
 			// lorsque la requête changera d'état; la fonction "afficherInfoProfAJAX_callback" sera appelée.
-			this.xhr.send(null);
+			xhr.send(null);
 
 		},
 		// Callback de la requête AJAX qui demande et affiche les informations d'un professeur.
 		"chargerDonneesZapCallback" : function () {
-			var xhr = com.dinfogarneau.cours526.xhr;
+			var cdc = com.dinfogarneau.cours526;
+			var xhr = cdc.xhrZap;
 			// La requête AJAX est-elle complétée (readyState=4) ?
 			if ( xhr.readyState == 4 ) {
 
@@ -95,7 +102,7 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 						$('msg-erreur').textContent = msgErreur;
 						
 					} else {
-						com.dinfogarneau.cours526.controleurChargement("donnees");
+						cdc.controleurChargement("donnees");
 					}
 				}
 			}
@@ -105,21 +112,22 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 		"apiGoogleMapCharge" : function () {
 				console.log('API Google Map chargé.');
 				// On informe le contrôleur (une simple fonction) que l'API Google Map est chargé.
-				this.controleurChargement("api-google-map");
+				com.dinfogarneau.cours526.controleurChargement("api-google-map");
 		}
 	};
 }
 // Gestionnaire d'événements pour le chargement du DOM.
 window.addEventListener('DOMContentLoaded', function() {
+		var cdc = com.dinfogarneau.cours526;
 		console.log('DOM chargé.');
 		// On informe le contrôleur (une simple fonction) que le DOM est chargé.
-		com.dinfogarneau.cours526.controleurChargement("dom");
+		cdc.controleurChargement("dom");
 		// Chargement asynchrone de l'API Google Map (requiert le DOM).
 		// Le callback après le chargement est géré par l'API lui-même
 		// avec l'appel de la fonction "apiGoogleMapCharge".
 		// Le chargement de cet API implique le chargement d'autres APIs liés de manière asynchrone;
 		// l'élément "body" doit exister.
-		com.dinfogarneau.cours526.chargerDonneesZap();
-		com.dinfogarneau.cours526.chargerScriptAsync('https://maps.googleapis.com/maps/api/js?sensor=true&callback=com.dinfogarneau.cours526.apiGoogleMapCharge&libraries=geometry', null);
-		com.dinfogarneau.cours526.chargerScriptAsync('js/async.js', null);
+		cdc.chargerDonneesZap();
+		cdc.chargerScriptAsync('https://maps.googleapis.com/maps/api/js?sensor=true&callback=com.dinfogarneau.cours526.apiGoogleMapCharge&libraries=geometry', null);
+		cdc.chargerScriptAsync('js/async.js', null);
 	}, false);
