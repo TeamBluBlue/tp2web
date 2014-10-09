@@ -5,15 +5,14 @@ com.dinfogarneau.cours526.traitementPostChargement = function() {
 	console.log('Traitement post-chargement.');
 	// Appel de la fonction qui initialise la carte.
 	cdc.initCarte();
-	cdc.utilisateur = cdc.ajouterPlacemark(null,"utilisateur");
 	cdc.afficherReperesCarte();
 	cdc.afficherArrondissementsCarte();
 }
 // Référence à la carte Google (variable globale).
 com.dinfogarneau.cours526.carte = {};
-// Position par défaut (Beauport).
-com.dinfogarneau.cours526.latDefaut = 46.876423;
-com.dinfogarneau.cours526.longDefaut = -71.190285;
+// Position par défaut (Cégep Garneau).
+com.dinfogarneau.cours526.latDefaut = 46.792517671520045;
+com.dinfogarneau.cours526.longDefaut = -71.26503957969801;
 // Référence à la carte Google (variable globale).
 com.dinfogarneau.cours526.utilisateur = {};
 com.dinfogarneau.cours526.arrondissements = [];
@@ -69,7 +68,8 @@ com.dinfogarneau.cours526.getCurrentPositionError = function (erreur) {
 
 com.dinfogarneau.cours526.setPositionUtilisateur = function(position) {
 	var cdc = com.dinfogarneau.cours526;
-	cdc.utilisateur.setPosition(position);
+
+	cdc.utilisateur = cdc.ajouterPlacemark(position, "utilisateur");
 	for (var i=0; i < cdc.reperes.placemarks.length-1; i++) {
 		var repere = cdc.reperes.placemarks[i];	
 		if(google.maps.geometry.spherical.computeDistanceBetween(repere.getPosition(), cdc.utilisateur.getPosition())<5000)
@@ -88,11 +88,7 @@ com.dinfogarneau.cours526.afficherReperesCarte = function() {
 	var cdc = com.dinfogarneau.cours526;
 	// Parcours des repères.
 	for (var i=0; i < cdc.reperes.json.length-1; i++) {
-		// Position du repère.
-		var posRepere = new google.maps.LatLng(cdc.reperes.json[i].lat, cdc.reperes.json[i].long);
-
-		// Création du repère sur la carte.
-		cdc.reperes.placemarks.push(cdc.ajouterPlacemark(posRepere, "zap"));
+		cdc.ajouterZap(cdc.reperes.json[i]);
 	}
 }
 // Fonction servant afficher certaines informations suite à l'exécution avec succès de la requête HTTP.
@@ -121,15 +117,7 @@ com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 				}
 			}
 		}
-		cdc.arrondissements[h] = new google.maps.Polygon({
-			paths: points,
-			strokeColor: '#FF0000',
-			strokeOpacity: 0.8,
-			strokeWeight: 2,
-			fillColor: '#FF0000',
-			fillOpacity: 0.35
-		});
-		cdc.arrondissements[h].setMap(cdc.carte);
+		cdc.ajouterArr(points);
 	}
 	// // Recherche du premier noeud "Element" (nodeType=1) sous la racine.
 	// var i=0;
@@ -139,18 +127,81 @@ com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 	// // Contenu texte du premier élément sous la racine.
 	// var titreLivre = racineXML.childNodes[i].firstChild.nodeValue;
 }
+com.dinfogarneau.cours526.ajouterZap = function(zapJSON) {
+	var cdc = com.dinfogarneau.cours526;
 
-com.dinfogarneau.cours526.ajouterPlacemark = function(position, type) {
-	var options = {"position": position, "map": com.dinfogarneau.cours526.carte};
-	switch(type)
-	{
+	// Position du repère.
+	var posRepere = new google.maps.LatLng(zapJSON.lat, zapJSON.long);
+
+	var options = {
+		"title": zapJSON.NOM_BATI,
+		"clickable": true
+		};
+
+	// Création du repère sur la carte.
+	var repere = cdc.ajouterPlacemark(posRepere, "zap", options);
+
+	google.maps.event.addListener(repere, "click", function() {
+	/***** Décommenter pour que les InfoWindows apparaissent *****/
+
+		// cdc.gererClickRepere(repere, zapJSON);
+	
+	});
+	
+	cdc.reperes.placemarks.push(repere);
+
+}
+com.dinfogarneau.cours526.ajouterPlacemark = function(position, type, options) {
+	var opts;
+	if(options == null) {
+		opts = {};	
+	}
+	else {
+		opts = options;
+	}
+	opts.position = position;
+	opts.map = com.dinfogarneau.cours526.carte;
+	switch(type) {
 		case "zap":
-			options.icon="images/wifi.png";
+			opts.icon="images/wifi.png";
 			break;
 		case "utilisateur":
-			options.icon="images/smiley_happy.png";
+			opts.icon="images/smiley_happy.png";
 			break;
 	}
-	return new google.maps.Marker(options);
+	return new google.maps.Marker(opts);
 }
+com.dinfogarneau.cours526.ajouterArr = function(points) {
+	var cdc = com.dinfogarneau.cours526;
 
+	cdc.arrondissements.push(new google.maps.Polygon({
+		paths: points,
+		strokeColor: '#FF0000',
+		strokeOpacity: 0.8,
+		strokeWeight: 2,
+		fillColor: '#FF0000',
+		fillOpacity: 0.35
+	}));
+	cdc.arrondissements[cdc.arrondissements.length-1].setMap(cdc.carte);
+
+}
+// Fonction appelée pour gérer le click sur un repère.
+com.dinfogarneau.cours526.gererClickRepere = function(repere, zapJSON) {
+	var cdc = com.dinfogarneau.cours526;
+
+	var infoWindow = new google.maps.InfoWindow({
+			content: cdc.getInfoWindow(zapJSON)
+		});
+
+	infoWindow.open(cdc.carte, repere);
+
+	// Recentrage de la carte sur le nouveau repère.
+	cdc.carte.panTo(repere.getPosition());
+}
+com.dinfogarneau.cours526.getInfoWindow = function(zapJSON) {
+	var div = document.createElement("div");
+	var h1 = document.createElement("h1");
+	h1.appendChild(document.createTextNode(zapJSON.NOM_BATI));
+	div.appendChild(h1);
+	return div;
+}

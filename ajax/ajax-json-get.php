@@ -12,15 +12,19 @@ echo "[\n";
 foreach($xml->Document->Folder->Placemark as $placemark)
 {
 	$coordonnees = split(",", $placemark->Point->coordinates);
-	$zapNom = $placemark->name;
+
 	$zapLong = trim($coordonnees[0]);
 	$zapLat = trim($coordonnees[1]);
+
 	if(!empty($zapLat) && !empty($zapLong))
 	{
 		echo "\t{\n";
-			echo "\t\t\"nom\": \"$zapNom\",\n";
-			echo "\t\t\"lat\": \"$zapLat\",\n";
-			echo "\t\t\"long\": \"$zapLong\"\n";
+		foreach($placemark->ExtendedData->SchemaData->SimpleData as $sd)
+		{
+			echo "\t\t\"".$sd->attributes()["name"]."\": \"$sd\",\n";
+		}
+		echo "\t\t\"lat\": \"$zapLat\",\n";
+		echo "\t\t\"long\": \"$zapLong\"\n";
 		echo "\t},\n";
 	}
 }
