@@ -7,15 +7,17 @@ com.dinfogarneau.cours526.traitementPostChargement = function() {
 	cdc.initCarte();
 	cdc.afficherReperesCarte();
 	cdc.afficherArrondissementsCarte();
+	cdc.initRtc();
 }
 // Référence à la carte Google (variable globale).
-com.dinfogarneau.cours526.carte = {};
+com.dinfogarneau.cours526.carte = null;
 // Position par défaut (Cégep Garneau).
 com.dinfogarneau.cours526.latDefaut = 46.792517671520045;
 com.dinfogarneau.cours526.longDefaut = -71.26503957969801;
 // Référence à la carte Google (variable globale).
 com.dinfogarneau.cours526.utilisateur = {};
 com.dinfogarneau.cours526.arrondissements = [];
+com.dinfogarneau.cours526.rtc = null;
 
 
 com.dinfogarneau.cours526.initCarte = function() {
@@ -89,7 +91,7 @@ com.dinfogarneau.cours526.afficherReperesCarte = function() {
 	// Parcours des repères.
 	for (var i=0; i < cdc.reperes.json.length-1; i++) {
 		cdc.ajouterZap(cdc.reperes.json[i]);
-	}
+	}	
 }
 // Fonction servant afficher certaines informations suite à l'exécution avec succès de la requête HTTP.
 com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {		
@@ -99,8 +101,8 @@ com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 	var arrondissements = docXML.getElementsByTagName("Arrondissement");
 	for(var h = 0; h< arrondissements.length;h++) {
 		var points = [];
-
-		var m = arrondissements[h].getElementsByTagName("Geometrie")[0].firstChild.nodeValue.match(/\([^\(\)]+\)/g);
+		var arr = arrondissements[h];
+		var m = arr.getElementsByTagName("Geometrie")[0].firstChild.nodeValue.match(/\([^\(\)]+\)/g);
 		if (m !== null) {
 			for (var i = 0; i < m.length; i++) {
 				//match all numeric strings
@@ -117,7 +119,7 @@ com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 				}
 			}
 		}
-		cdc.ajouterArr(points);
+		cdc.ajouterArr(arr.getElementsByTagName("Code")[0].firstChild.nodeValue,arr.getElementsByTagName("Nom")[0].firstChild.nodeValue,points);
 	}
 	// // Recherche du premier noeud "Element" (nodeType=1) sous la racine.
 	// var i=0;
@@ -171,19 +173,34 @@ com.dinfogarneau.cours526.ajouterPlacemark = function(position, type, options) 
 	}
 	return new google.maps.Marker(opts);
 }
-com.dinfogarneau.cours526.ajouterArr = function(points) {
-	var cdc = com.dinfogarneau.cours526;
-
-	cdc.arrondissements.push(new google.maps.Polygon({
+com.dinfogarneau.cours526.ajouterArr = function(code,nom,points) {
+	var arrPoly = new google.maps.Polygon({
 		paths: points,
 		strokeColor: '#FF0000',
 		strokeOpacity: 0.8,
 		strokeWeight: 2,
 		fillColor: '#FF0000',
 		fillOpacity: 0.35
-	}));
-	cdc.arrondissements[cdc.arrondissements.length-1].setMap(cdc.carte);
+	});
+	var panneau = document.getElementById("panneau");
+	var cdc = com.dinfogarneau.cours526;
 
+	var label = document.createElement("label");
+	var input = document.createElement("input");
+	input.type = "checkbox";
+	input.checked = true;
+
+	input.addEventListener("change", function(){
+		arrPoly.setVisible(this.checked);
+	});
+
+	label.appendChild(input);
+	label.appendChild(document.createTextNode(code + " - " + nom));
+
+	panneau.insertBefore(label, panneau.firstChild);
+
+	arrPoly.setMap(cdc.carte);
+	cdc.arrondissements.push(arrPoly);
 }
 // Fonction appelée pour gérer le click sur un repère.
 com.dinfogarneau.cours526.gererClickRepere = function(repere, zapJSON) {
@@ -204,4 +221,22 @@ com.dinfogarneau.cours526.getInfoWindow = function(zapJSON) {
 	h1.appendChild(document.createTextNode(zapJSON.NOM_BATI));
 	div.appendChild(h1);
 	return div;
+}
+com.dinfogarneau.cours526.initRtc = function()
+{
+	var cdc = com.dinfogarneau.cours526;
+	cdc.rtc = new google.maps.KmlLayer({
+		url: "http://webequinox.net/kml/rtc-trajets.kml"
+	});
+
+	document.getElementById("chkBoxRtc").addEventListener("change", function(){
+		if(this.checked)
+		{
+			cdc.rtc.setMap(cdc.carte);
+		}
+		else
+		{
+			cdc.rtc.setMap();
+		}
+	});
 }
