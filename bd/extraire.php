@@ -7,6 +7,8 @@ include("../include/param-bd.inc.php");
 try {
 	$connBD = new PDO("mysql:host=$dbHote;dbname=$dbNom", $dbUtilisateur, $dbMotPasse, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
 	$connBD->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	
+	echo "L'objet PDO a été créé!<br/>";
 } catch (PDOException $e) {
 	echo "Erreur lors de la connexion à la BD :<br />\n".$e->getMessage();
 }
@@ -33,36 +35,26 @@ EOSQL;
 			CONSTRAINT FK_zap FOREIGN KEY (zap) REFERENCES zap(nom))
 EOSQL;
 	
-	$res = $connBD->exec($reqCreationTableZap);
+	$connBD->exec($reqCreationTableZap);
+	$connBD->exec($reqCreationTableAvis);
 	
-	if ($res !== false){
-		$res = $connBD->exec($reqCreationTableAvis);
-		
-		if ($res !== false){
-			echo "Tables créées avec succès!<br/>";
-		}
-		else{
-			echo "La table des avis n'a pas été créée.<br/>";
-		}
-	}
-	else{
-		echo "La table des ZAP n'a pas été créée.<br/>";
-	}
-	
+	echo "Les tables ont été créées!<br/>";
 } catch (PDOException $e) {
 	echo "La création des tables n'a pas fonctionné :<br />\n".$e->getMessage();
 } catch (Exception $ex) {
 	echo "Une erreur inattendue s'est produite :<br />\n".$e->getMessage();
 }
 
-//try{
-//	$connBD->exec("ALTER TABLE avis DROP CONSTRAINT FK_zap");
-//} catch (PDOException $e) {
-//	echo "La clé étrangère de la table avis n'a pu être supprimée :<br />\n".$e->getMessage();
-//}
+try{
+	$connBD->exec("ALTER TABLE avis DROP FOREIGN KEY FK_zap");
+	echo "La clé étrangère a été supprimée!<br/>";
+} catch (PDOException $e) {
+	echo "La clé étrangère de la table avis n'a pu être supprimée :<br />\n".$e->getMessage();
+}
 
 try{
 	$connBD->exec("DELETE FROM zap");
+	echo "La table zap a été vidée!<br/>";
 } catch (PDOException $e) {
 	echo "Un problème est survenu lors du vidage de la table des zap :<br />\n".$e->getMessage();
 }
@@ -71,8 +63,8 @@ $reqAjoutZap = <<<EOSQL
 INSERT INTO zap (nom, arrondissement, num_civil, nom_batiment, rue, latitude, longitude)
 VALUES(:nom, :arrondissement, :num_civil, :nom_batiment, :rue, :latitude, :longitude)
 EOSQL;
-
 $prepZap = $connBD->prepare($reqAjoutZap);
+
 foreach($xml->Document->Folder->Placemark as $placemark)
 {
 	$nom = $placemark->name;
@@ -97,7 +89,7 @@ foreach($xml->Document->Folder->Placemark as $placemark)
 	}
 	
 	if ($lat !== null && $long !== null){
-			try{
+		try{
 			$prepZap->execute(array(
 				"nom" => $nom,
 				"arrondissement" => $arrondissement,
@@ -112,3 +104,15 @@ foreach($xml->Document->Folder->Placemark as $placemark)
 		}
 	}
 }
+echo "Les nouveaux zap ont été enregistrés dans la BD!<br/>";
+
+$prepZap->closeCursor();
+
+try{
+	$connBD->exec("ALTER TABLE avis ADD CONSTRAINT FK_zap FOREIGN KEY (zap) REFERENCES zap(nom)");
+	echo "La clé étrangère de la table avis a été rajoutée!<br/>";
+} catch (PDOException $e) {
+	echo "La clé étrangère de la table avis n'a pu être rajoutée :<br />\n".$e->getMessage();
+}
+
+$connDB = null;
