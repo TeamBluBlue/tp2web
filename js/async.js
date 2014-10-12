@@ -128,6 +128,10 @@ com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 	// 	i++;
 	// // Contenu texte du premier élément sous la racine.
 	// var titreLivre = racineXML.childNodes[i].firstChild.nodeValue;
+	cdc.arrondissements.sort(function(a, b){
+		return a.code - b.code;
+	});
+	cdc.initInterface();
 }
 com.dinfogarneau.cours526.ajouterZap = function(zapJSON) {
 	var cdc = com.dinfogarneau.cours526;
@@ -182,25 +186,10 @@ com.dinfogarneau.cours526.ajouterArr = function(code,nom,points) {
 		fillColor: '#FF0000',
 		fillOpacity: 0.35
 	});
-	var panneau = document.getElementById("panneau");
 	var cdc = com.dinfogarneau.cours526;
 
-	var label = document.createElement("label");
-	var input = document.createElement("input");
-	input.type = "checkbox";
-	input.checked = true;
-
-	input.addEventListener("change", function(){
-		arrPoly.setVisible(this.checked);
-	});
-
-	label.appendChild(input);
-	label.appendChild(document.createTextNode(code + " - " + nom));
-
-	panneau.insertBefore(label, panneau.firstChild);
-
 	arrPoly.setMap(cdc.carte);
-	cdc.arrondissements.push(arrPoly);
+	cdc.arrondissements.push({"code": Number(code), "nom":nom, "polygone": arrPoly});
 }
 // Fonction appelée pour gérer le click sur un repère.
 com.dinfogarneau.cours526.gererClickRepere = function(repere, zapJSON) {
@@ -233,10 +222,69 @@ com.dinfogarneau.cours526.initRtc = function()
 		if(this.checked)
 		{
 			cdc.rtc.setMap(cdc.carte);
-		}
+		}	
 		else
 		{
 			cdc.rtc.setMap();
+		}
+	});
+}
+com.dinfogarneau.cours526.initInterface = function(){
+	var cdc = com.dinfogarneau.cours526;
+	for(var i = 0; i < cdc.arrondissements.length; i++)
+	{
+		var arr = cdc.arrondissements[i];
+		var panneau = document.getElementById("arrondissements");
+
+		var label = document.createElement("label");
+		var input = document.createElement("input");
+		input.type = "checkbox";
+		input.checked = true;
+		input.value = i;
+
+		input.addEventListener("change", function(){
+			cdc.arrondissements[this.value].polygone.setVisible(this.checked);
+		});
+
+		label.addEventListener("mouseover", function(){
+			cdc.arrondissements[this.firstChild.value].polygone.setOptions({
+				fillOpacity:0.25,
+				visible:true,
+				strokeColor: '#FF4444',
+				strokeOpacity: 0.4,
+				fillColor: '#FF4444'
+			});			
+		});
+		label.addEventListener("mouseout", function(){
+			cdc.arrondissements[this.firstChild.value].polygone.setOptions({
+				fillOpacity:0.35,
+				strokeColor: '#FF0000',
+				strokeOpacity: 0.8,
+				fillColor: '#FF0000',
+				visible:this.firstChild.checked
+			});			
+		});
+		label.appendChild(input);
+		label.appendChild(document.createTextNode(arr.code + " - " + arr.nom));
+
+		panneau.appendChild(label);
+	}
+	document.getElementById("selectAll").addEventListener("click", function(e){
+		e.preventDefault();
+		var inputs = document.getElementById("arrondissements").getElementsByTagName("input");
+		for(var i = 0; i < inputs.length; i++)
+		{
+			inputs[i].checked = true;
+			inputs[i].dispatchEvent(new Event("change"));
+		}
+	});
+	document.getElementById("unselectAll").addEventListener("click", function(e){
+		e.preventDefault();
+		var inputs = document.getElementById("arrondissements").getElementsByTagName("input");
+		for(var i = 0; i < inputs.length; i++)
+		{
+			inputs[i].checked = false;
+			inputs[i].dispatchEvent(new Event("change"));
 		}
 	});
 }

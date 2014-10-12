@@ -9,7 +9,12 @@ html, body { height: 100%; margin: 0; padding: 0; }
 	padding: 1em;
 	background-color: #FFF;
 }
-label
+#panneau label
 {
 	display: block;
+	cursor: pointer;
+}
+#panneau label:hover
+{
+	background-color: #DDD;
 }

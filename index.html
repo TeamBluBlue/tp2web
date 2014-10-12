@@ -28,7 +28,15 @@
 		Une division servant afficher la carte et occupant 100% de la largeur
 		et de la hauteur de la page ou du "viewport" (appareil mobile).
 	-->
-	<div id="panneau"><hr /><label><input type="checkbox" id="chkBoxRtc" />Afficher les trajets du RTC</label></div>
+	<div id="panneau">
+		<div id="arrondissements"></div>
+		<div id="arrondissements">
+			<div>
+				<a href="#" id="selectAll">Tout sélectionner</a>
+				<a href="#" id="unselectAll">Tout désélectionner</a>
+			</div>
+		</div>
+		<div><label><input type="checkbox" id="chkBoxRtc" />Afficher les trajets du RTC</label></div></div>
 	<div id="carte-canvas"></div>
 	
 </body>
