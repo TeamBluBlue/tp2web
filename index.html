@@ -7,18 +7,6 @@
 	<title>Travail Pratique 2 - Programmation Web Avancée</title>
 	<link rel="stylesheet" type="text/css" href="css/styles.css" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-	<!--
-		Chargement de l'API Google Map API v3.
-		*** Activation de la géolocalisation "sensor=true".
-		Note : Pour des fichiers locaux (pas de domaine), une clé (paramètre "key") n'est pas nécessaire.
-	-->
-	<!--<script type="text/javascript">
-		function carteChargee()
-		{
-			alert("");
-			ajouterPlacemark(carte.getCenter());
-		}
-	</script>-->
 	<script type="text/javascript" src="js/sync.js"></script>
 </head>
 
@@ -29,14 +17,32 @@
 		et de la hauteur de la page ou du "viewport" (appareil mobile).
 	-->
 	<div id="panneau">
-		<div id="arrondissements"></div>
-		<div id="arrondissements">
-			<div>
-				<a href="#" id="selectAll">Tout sélectionner</a>
-				<a href="#" id="unselectAll">Tout désélectionner</a>
+		<nav class="nav-onglets">
+			<div class="lien courant"><a id="lienZap" href="#ongletZap">Bornes ZAP</a></div>
+			<div class="lien"><a id="lienArr" href="#ongletArr">Arrondissements</a></div>
+		</nav>
+		<div>
+			<div id="ongletZap" class="onglet ouvert">
+				<div class="onglet-contenu">
+					<!-- <h1>Bornes ZAP</h1> -->
+					<ul id="lstZap"></ul>
+				</div>
+			</div>
+			<div id="ongletArr" class="onglet ferme">
+				<div class="onglet-contenu">
+					<!-- <h1>Arrondissements</h1> -->
+					<div  id="lstArr">
+						<a href="#" id="selectAll">Tout sélectionner</a>
+						<a href="#" id="unselectAll">Tout désélectionner</a>
+					</div>
+				</div>
+			</div>
+
+			<div id="rtc">
+				<label><input type="checkbox" id="chkBoxRtc" />Afficher les trajets du RTC</label>
+				</div>
 			</div>
 		</div>
-		<div><label><input type="checkbox" id="chkBoxRtc" />Afficher les trajets du RTC</label></div></div>
 	<div id="carte-canvas"></div>
 	
 </body>
