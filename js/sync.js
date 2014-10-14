@@ -50,10 +50,7 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 		},
 		"xhrZap" : {},
 		"xhrArr" : {},
-		"reperes" : {
-			"json" : {},
-			"placemarks" : []
-		},
+		"reperes" : {},
 		"chargerDonneesZap" : function () {
 			var cdc = com.dinfogarneau.cours526;
 			// Création de l'objet XMLHttpRequest.
@@ -89,7 +86,7 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 					// Création de l'objet JavaScript à partir de l'expression JSON.
 					// *** Notez l'utilisation de "responseText".
 					try { 
-						cdc.reperes.json = JSON.parse( xhr.responseText );
+						cdc.reperes = JSON.parse( xhr.responseText );
 					} catch (e) {
 						alert('ERREUR: La réponse AJAX n\'est pas une expression JSON valide.');
 						// Fin de la fonction.
@@ -97,9 +94,9 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 					}
 
 					// Y a-t-il eu une erreur côté serveur ?
-					if ( cdc.reperes.json.erreur ) {
+					if ( cdc.reperes.erreur ) {
 						// Affichage du message d'erreur.
-						var msgErreur = 'Erreur: ' + cdc.reperes.json.erreur.message;
+						var msgErreur = 'Erreur: ' + cdc.reperes.erreur.message;
 						$('msg-erreur').textContent = msgErreur;
 						
 					} else {

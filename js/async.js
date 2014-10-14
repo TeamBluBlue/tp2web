@@ -7,10 +7,11 @@ com.dinfogarneau.cours526.traitementPostChargement = function() {
 	cdc.initCarte();
 	cdc.afficherReperesCarte();
 	cdc.afficherArrondissementsCarte();
-	cdc.initRtc();
+	cdc.initInterface();
 }
 // Référence à la carte Google (variable globale).
 com.dinfogarneau.cours526.carte = null;
+com.dinfogarneau.cours526.infoWindow = null;
 // Position par défaut (Cégep Garneau).
 com.dinfogarneau.cours526.latDefaut = 46.792517671520045;
 com.dinfogarneau.cours526.longDefaut = -71.26503957969801;
@@ -72,8 +73,8 @@ com.dinfogarneau.cours526.setPositionUtilisateur = function(position) {
 	var cdc = com.dinfogarneau.cours526;
 
 	cdc.utilisateur = cdc.ajouterPlacemark(position, "utilisateur");
-	for (var i=0; i < cdc.reperes.placemarks.length-1; i++) {
-		var repere = cdc.reperes.placemarks[i];	
+	for (var i=0; i < cdc.reperes.length; i++) {
+		var repere = cdc.reperes[i].placemark;	
 		if(google.maps.geometry.spherical.computeDistanceBetween(repere.getPosition(), cdc.utilisateur.getPosition())<5000)
 		{
 			repere.setIcon("images/wifi_proche.png");
@@ -89,8 +90,8 @@ com.dinfogarneau.cours526.setPositionUtilisateur = function(position) {
 com.dinfogarneau.cours526.afficherReperesCarte = function() {
 	var cdc = com.dinfogarneau.cours526;
 	// Parcours des repères.
-	for (var i=0; i < cdc.reperes.json.length-1; i++) {
-		cdc.ajouterZap(cdc.reperes.json[i]);
+	for (var i=0; i < cdc.reperes.length; i++) {
+		cdc.ajouterZap(cdc.reperes[i]);
 	}	
 }
 // Fonction servant afficher certaines informations suite à l'exécution avec succès de la requête HTTP.
@@ -128,31 +129,30 @@ com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 	// 	i++;
 	// // Contenu texte du premier élément sous la racine.
 	// var titreLivre = racineXML.childNodes[i].firstChild.nodeValue;
+	cdc.arrondissements.sort(function(a, b){
+		return a.code - b.code;
+	});
 }
-com.dinfogarneau.cours526.ajouterZap = function(zapJSON) {
+com.dinfogarneau.cours526.ajouterZap = function(repere) {
 	var cdc = com.dinfogarneau.cours526;
 
 	// Position du repère.
-	var posRepere = new google.maps.LatLng(zapJSON.lat, zapJSON.long);
+	var posRepere = new google.maps.LatLng(repere.lat, repere.long);
 
 	var options = {
-		"title": zapJSON.NOM_BATI,
 		"clickable": true
 		};
 
 	// Création du repère sur la carte.
-	var repere = cdc.ajouterPlacemark(posRepere, "zap", options);
+	repere.placemark = cdc.ajouterPlacemark(posRepere, "zap", options);
 
-	google.maps.event.addListener(repere, "click", function() {
-	/***** Décommenter pour que les InfoWindows apparaissent *****/
+	google.maps.event.addListener(repere.placemark, "click", function() {
 
-		// cdc.gererClickRepere(repere, zapJSON);
+		cdc.afficherInfoRepere(repere);
 	
 	});
-	
-	cdc.reperes.placemarks.push(repere);
-
 }
+
 com.dinfogarneau.cours526.ajouterPlacemark = function(position, type, options) {
 	var opts;
 	if(options == null) {
@@ -182,47 +182,130 @@ com.dinfogarneau.cours526.ajouterArr = function(code,nom,points) {
 		fillColor: '#FF0000',
 		fillOpacity: 0.35
 	});
-	var panneau = document.getElementById("panneau");
 	var cdc = com.dinfogarneau.cours526;
-
-	var label = document.createElement("label");
-	var input = document.createElement("input");
-	input.type = "checkbox";
-	input.checked = true;
-
-	input.addEventListener("change", function(){
-		arrPoly.setVisible(this.checked);
-	});
-
-	label.appendChild(input);
-	label.appendChild(document.createTextNode(code + " - " + nom));
-
-	panneau.insertBefore(label, panneau.firstChild);
 
 	arrPoly.setMap(cdc.carte);
-	cdc.arrondissements.push(arrPoly);
+	cdc.arrondissements.push({"code": Number(code), "nom":nom, "polygone": arrPoly});
 }
 // Fonction appelée pour gérer le click sur un repère.
-com.dinfogarneau.cours526.gererClickRepere = function(repere, zapJSON) {
+com.dinfogarneau.cours526.afficherInfoRepere = function(repere) {
 	var cdc = com.dinfogarneau.cours526;
-
-	var infoWindow = new google.maps.InfoWindow({
-			content: cdc.getInfoWindow(zapJSON)
+	if(cdc.infoWindow != null)
+	{
+		cdc.infoWindow.close();
+	}
+	cdc.infoWindow = new google.maps.InfoWindow({
+			content: cdc.getInfoWindow(repere)
 		});
 
-	infoWindow.open(cdc.carte, repere);
+	cdc.infoWindow.open(cdc.carte, repere.placemark);
 
 	// Recentrage de la carte sur le nouveau repère.
-	cdc.carte.panTo(repere.getPosition());
+	cdc.carte.panTo(repere.placemark.getPosition());
 }
-com.dinfogarneau.cours526.getInfoWindow = function(zapJSON) {
+com.dinfogarneau.cours526.getInfoWindow = function(repere) {
 	var div = document.createElement("div");
 	var h1 = document.createElement("h1");
-	h1.appendChild(document.createTextNode(zapJSON.NOM_BATI));
+	h1.appendChild(document.createTextNode(repere.nomBati));
 	div.appendChild(h1);
 	return div;
 }
-com.dinfogarneau.cours526.initRtc = function()
+
+
+com.dinfogarneau.cours526.initInterface = function(){
+	var cdc = com.dinfogarneau.cours526;
+	
+	cdc.initInterfaceZap();
+	cdc.initInterfaceArr();
+	cdc.initInterfaceRtc();
+	cdc.initLiens();
+	cdc.showInterface();
+}
+
+
+com.dinfogarneau.cours526.initInterfaceZap = function(){
+	var cdc = com.dinfogarneau.cours526;
+
+	var liste = document.getElementById("lstZap");
+
+	for(var i = 0; i < cdc.reperes.length; i++){
+		liste.appendChild(cdc.ajouterElemZapInterface(cdc.reperes[i]));
+	}
+}
+com.dinfogarneau.cours526.ajouterElemZapInterface = function(repere){
+	var cdc = com.dinfogarneau.cours526;
+
+		var li = document.createElement("li");
+		var a = document.createElement("a");
+		a.href="#"+repere.nomBati;
+		a.addEventListener("click", function(e){
+			e.preventDefault();
+			cdc.afficherInfoRepere(repere);
+		});
+		a.appendChild(document.createTextNode(repere.nomBati));
+		li.appendChild(a);
+		return li;
+}
+
+
+com.dinfogarneau.cours526.initInterfaceArr = function(){
+	var cdc = com.dinfogarneau.cours526;
+
+	var panneau = document.getElementById("lstArr");
+	for(var i = 0; i < cdc.arrondissements.length; i++)
+	{
+		var arr = cdc.arrondissements[i];
+
+		var label = document.createElement("label");
+		var input = document.createElement("input");
+		input.type = "checkbox";
+		input.checked = true;
+		input.value = i;
+
+		input.addEventListener("change", function(){
+			cdc.arrondissements[this.value].polygone.setVisible(this.checked);
+		});
+
+		label.addEventListener("mouseover", function(){
+			cdc.arrondissements[this.firstChild.value].polygone.setOptions({
+				visible:true,
+				strokeColor: '#0000FF',
+				fillColor: '#0000FF'
+			});			
+		});
+		label.addEventListener("mouseout", function(){
+			cdc.arrondissements[this.firstChild.value].polygone.setOptions({
+				strokeColor: '#FF0000',
+				fillColor: '#FF0000',
+				visible:this.firstChild.checked
+			});			
+		});
+		label.appendChild(input);
+		label.appendChild(document.createTextNode(arr.code + " - " + arr.nom));
+
+		panneau.appendChild(label);
+	}
+	document.getElementById("selectAll").addEventListener("click", function(e){
+		e.preventDefault();
+		var inputs = document.getElementById("lstArr").getElementsByTagName("input");
+		for(var i = 0; i < inputs.length; i++)
+		{
+			inputs[i].checked = true;
+			inputs[i].dispatchEvent(new Event("change"));
+		}
+	});
+	document.getElementById("unselectAll").addEventListener("click", function(e){
+		e.preventDefault();
+		var inputs = document.getElementById("lstArr").getElementsByTagName("input");
+		for(var i = 0; i < inputs.length; i++)
+		{
+			inputs[i].checked = false;
+			inputs[i].dispatchEvent(new Event("change"));
+		}
+	});
+}
+
+com.dinfogarneau.cours526.initInterfaceRtc = function()
 {
 	var cdc = com.dinfogarneau.cours526;
 	cdc.rtc = new google.maps.KmlLayer({
@@ -233,10 +316,45 @@ com.dinfogarneau.cours526.initRtc = function()
 		if(this.checked)
 		{
 			cdc.rtc.setMap(cdc.carte);
-		}
+		}	
 		else
 		{
 			cdc.rtc.setMap();
 		}
 	});
+}
+com.dinfogarneau.cours526.initLiens = function(){
+	var panneau = document.getElementById("panneau");
+
+	var nav = panneau.getElementsByClassName("nav-onglets")[0];
+	
+	var liens = nav.getElementsByClassName("lien");
+
+	for (var i = 0; i< liens.length; i++)
+	{
+		var lien = liens[i].getElementsByTagName("a")[0];
+
+		lien.addEventListener("click",function(e){
+			e.preventDefault();
+
+			var courants = nav.getElementsByClassName("courant");
+			for(var j = 0; j< courants.length; j++)
+			{
+				courants[j].className = courants[j].className.replace("courant","").trim();
+			}
+
+			var parent = this.parentNode;
+			this.parentNode.className = this.parentNode.className + " courant";
+
+			var onglets = panneau.getElementsByClassName("onglet");
+			for (var i = 0; i < onglets.length; i++) {
+				onglets[i].className = onglets[i].className.replace("ouvert","ferme");
+			};
+			var onglet = document.getElementById(this.getAttribute("href").replace("#",""));
+			onglet.className = onglet.className.replace("ferme","ouvert");
+		});
+	}
+}
+com.dinfogarneau.cours526.showInterface = function() {
+	document.getElementById("panneau").style.left="0";
 }

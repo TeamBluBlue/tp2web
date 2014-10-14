@@ -3,13 +3,99 @@ html, body { height: 100%; margin: 0; padding: 0; }
 #panneau
 {
 	position: absolute;
-	left: 0;
+	left: -350px;
+	top: 45%;
 	bottom: 2em;
 	z-index: 5;
-	padding: 1em;
-	background-color: #FFF;
+	-webkit-transition:left 2s;
+	transition: left 2s;
 }
-label
+#panneau label
 {
 	display: block;
+	cursor: pointer;
+}
+#panneau label:hover, li:hover
+{
+	background-color: #DDD;
+}
+#lstZap
+{
+	margin:0 1em;
+	padding:0;
+	list-style-type: none;
+}
+#lstZap li
+{
+	margin: 0 -1em;
+}
+#lstZap li + li
+{
+	border-top: 1px solid #999;
+}
+#lstZap a
+{
+	display: block;
+	padding: 5px 1em;
+}
+.onglet-contenu
+{
+	width: 300px;
+	overflow: auto;
+	height: 100%;
+	position: absolute;
+	top: 0em;
+	background-color: #FFF;
+	border:0.5em solid #FFF;
+
+}
+.onglet
+{
+	position: absolute;
+	top:3em;
+	bottom: 3em;
+	width: 100%;
+}
+.ferme
+{
+	display: none;
+}
+.nav-onglets
+{
+	padding:0.5em;
+	position: relative;
+	z-index: 6;
+	background-color: #FFF;
+	width: 300px;
+	text-align: center;
+}
+.lien
+{
+	display: inline-block;
+	width: 48%;
+}
+.lien a
+{
+	padding: 0.3em 0;
+	display: block;
+	font-size: 1.2em;
+	border:1px solid #000;
+	color: #000;
+	text-decoration: none;
+	background-color: #fff;
+}
+.courant a
+{
+	color: #fff;
+	background-color: #00F;
+}
+#rtc
+{
+	background-color: #FFF;
+	position: absolute;
+	bottom: 0;
+	left: 0em;
+	right:0em;
+	padding:0.5em 1em;
+	border-top:2px ridge #FFF;
 }

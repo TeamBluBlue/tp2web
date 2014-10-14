@@ -9,8 +9,11 @@ header("Pragma: no-cache");
 
 $xml = simplexml_load_file("http://donnees.ville.quebec.qc.ca/Handler.ashx?id=29&f=KML");
 echo "[\n";
+$nb = $xml->Document->Folder->Placemark->count();
+$i = 0;
 foreach($xml->Document->Folder->Placemark as $placemark)
 {
+	$i++;
 	$coordonnees = split(",", $placemark->Point->coordinates);
 
 	$zapLong = trim($coordonnees[0]);
@@ -19,14 +22,21 @@ foreach($xml->Document->Folder->Placemark as $placemark)
 	if(!empty($zapLat) && !empty($zapLong))
 	{
 		echo "\t{\n";
+		$nomsRemplacement = array("NOM_BATI" => "nomBati", "ARROND" => "arrond", "NO_CIV" => "noCiv", "RUE" => "rue");
 		foreach($placemark->ExtendedData->SchemaData->SimpleData as $sd)
 		{
-			echo "\t\t\"".$sd->attributes()["name"]."\": \"$sd\",\n";
+			echo "\t\t\"".$nomsRemplacement[(string) $sd->attributes()["name"]]."\": \"$sd\",\n";
 		}
 		echo "\t\t\"lat\": \"$zapLat\",\n";
 		echo "\t\t\"long\": \"$zapLong\"\n";
-		echo "\t},\n";
+		echo "\t}";
+		if($i < $nb)
+		{
+			echo ",";
+		}
+		echo "\n";
 	}
+
 }
-echo "{}]\n";
+echo "]\n";
 ?>
