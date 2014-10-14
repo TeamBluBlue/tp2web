@@ -68,14 +68,12 @@ $prepZap = $connBD->prepare($reqAjoutZap);
 foreach($xml->Document->Folder->Placemark as $placemark)
 {
 	$nom = $placemark->name;
-	
-	foreach ($placemark->ExtendedData->SchemaData as $schemaData){
-		$arrondissement = $schemaData->SimpleData[0];
-		$noCivil = $schemaData->SimpleData[1];
-		$nomBatiment = $schemaData->SimpleData[2];
-		$rue = $schemaData->SimpleData[3];
+
+	$nomsRemplacement = array("NOM_BATI" => "nomBatiment", "ARROND" => "arrondissement", "NO_CIV" => "noCivil", "RUE" => "rue");
+	$infos = array();
+	foreach ($placemark->ExtendedData->SchemaData->SimpleData as $simpleData){
+		$infos[$nomsRemplacement[(string) $simpleData->attributes()["name"]]] = $simpleData;
 	}
-	
 	$chaineCoordonnees = $placemark->Point->coordinates;
 	$elementsCoordonnes = split(",", $chaineCoordonnees);
 	
@@ -92,15 +90,15 @@ foreach($xml->Document->Folder->Placemark as $placemark)
 		try{
 			$prepZap->execute(array(
 				"nom" => $nom,
-				"arrondissement" => $arrondissement,
-				"num_civil" => $noCivil,
-				"nom_batiment" => $nomBatiment,
-				"rue" => $rue,
+				"arrondissement" => $infos["arrondissement"],
+				"num_civil" => $infos["noCivil"],
+				"nom_batiment" => $infos["nomBatiment"],
+				"rue" => $infos["rue"],
 				"latitude" => $lat,
 				"longitude" => $long
 			));
 		} catch (PDOException $e) {
-			echo "Le zap $nom n'a pu être ajouté à la BD :<br />\n".$e->getMessage();
+			echo "Le zap $nom n'a pu être ajouté à la BD :<br />\n".$e->getMessage()."<br />$noCivil\n";
 		}
 	}
 }
