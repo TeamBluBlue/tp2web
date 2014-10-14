@@ -21,16 +21,16 @@ try {
 			num_civil VARCHAR(5),
 			nom_batiment VARCHAR(50),
 			rue VARCHAR(50),
-			latitude DECIMAL(18,14),
-			longitude DECIMAL(18,14),
+			latitude DECIMAL(18,14) NOT NULL,
+			longitude DECIMAL(18,14) NOT NULL,
 			PRIMARY KEY (nom)
 			) ENGINE=InnoDB
 EOSQL;
 	$reqCreationTableAvis = <<<EOSQL
 			CREATE TABLE IF NOT EXISTS avis(
 			id INT NOT NULL AUTO_INCREMENT,
-			zap VARCHAR(7),
-			message TEXT,
+			zap VARCHAR(7) NOT NULL,
+			message TEXT NOT NULL,
 			PRIMARY KEY (id),
 			CONSTRAINT FK_zap FOREIGN KEY (zap) REFERENCES zap(nom))
 EOSQL;
