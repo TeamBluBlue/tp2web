@@ -4,9 +4,16 @@ com.dinfogarneau.cours526.traitementPostChargement = function() {
 	var cdc = com.dinfogarneau.cours526;
 	console.log('Traitement post-chargement.');
 	// Appel de la fonction qui initialise la carte.
+	console.log('Affichage de la carte');
 	cdc.initCarte();
+
+	console.log('Affichage des repères');
 	cdc.afficherReperesCarte();
+
+	console.log('Affichage des arrondissements');
 	cdc.afficherArrondissementsCarte();
+
+	console.log('Interface HTML');
 	cdc.initInterface();
 }
 // Référence à la carte Google (variable globale).
@@ -73,8 +80,9 @@ com.dinfogarneau.cours526.setPositionUtilisateur = function(position) {
 	var cdc = com.dinfogarneau.cours526;
 
 	cdc.utilisateur = cdc.ajouterPlacemark(position, "utilisateur");
+	console.log("Calcul de la distance entre les bornes et l'utilisateur");
 	for (var i=0; i < cdc.reperes.length; i++) {
-		var repere = cdc.reperes[i].placemark;	
+		var repere = cdc.reperes[i].placemark;
 		if(google.maps.geometry.spherical.computeDistanceBetween(repere.getPosition(), cdc.utilisateur.getPosition())<5000)
 		{
 			repere.setIcon("images/wifi_proche.png");
@@ -113,6 +121,7 @@ com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 					for (var j = 0, tmpArr = []; j < tmp.length; j+=2) {
 						var lat = Number(tmp[j + 1]);
 						var lng = Number(tmp[j]);
+
 						var pos = new google.maps.LatLng(lat, lng);
 						tmpArr.push(pos);
 					}
@@ -135,7 +144,6 @@ com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 }
 com.dinfogarneau.cours526.ajouterZap = function(repere) {
 	var cdc = com.dinfogarneau.cours526;
-
 	// Position du repère.
 	var posRepere = new google.maps.LatLng(repere.lat, repere.long);
 
@@ -309,7 +317,7 @@ com.dinfogarneau.cours526.initInterfaceRtc = function()
 {
 	var cdc = com.dinfogarneau.cours526;
 	cdc.rtc = new google.maps.KmlLayer({
-		url: "http://webequinox.net/kml/rtc-trajets.kml"
+		url: "http://webequinox.net/kml/rt-trajets.kml"
 	});
 
 	document.getElementById("chkBoxRtc").addEventListener("change", function(){
