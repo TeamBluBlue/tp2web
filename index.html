@@ -4,8 +4,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="fr" xml:lang="fr">
 <head>
 	<meta charset="utf-8" />
-	<title>Travail Pratique 2 - Programmation Web Avancée</title>
+	<title>Wi-Finder &#128270</title>
 	<link rel="stylesheet" type="text/css" href="css/styles.css" />
+	<link rel="icon" type="image/png" href="images/favicon.png" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 	<script type="text/javascript" src="js/sync.js"></script>
 </head>
@@ -16,34 +17,38 @@
 		Une division servant afficher la carte et occupant 100% de la largeur
 		et de la hauteur de la page ou du "viewport" (appareil mobile).
 	-->
-	<div id="panneau">
-		<nav class="nav-onglets">
-			<div class="lien courant"><a id="lienZap" href="#ongletZap">Bornes ZAP</a></div>
-			<div class="lien"><a id="lienArr" href="#ongletArr">Arrondissements</a></div>
-		</nav>
-		<div>
-			<div id="ongletZap" class="onglet ouvert">
-				<div class="onglet-contenu">
-					<!-- <h1>Bornes ZAP</h1> -->
-					<ul id="lstZap"></ul>
-				</div>
+	<div id="panneau" class="panneau-ferme">
+		<div class="conteneur">
+			<div>
+				<a href="#ouvrirFermerOnglet" class="fermer">°°°</a>
 			</div>
-			<div id="ongletArr" class="onglet ferme">
-				<div class="onglet-contenu">
-					<!-- <h1>Arrondissements</h1> -->
-					<div  id="lstArr">
-						<a href="#" id="selectAll">Tout sélectionner</a>
-						<a href="#" id="unselectAll">Tout désélectionner</a>
+			<nav class="nav-onglets">
+				<div class="lien courant"><a id="lienZap" href="#ongletZap">Bornes ZAP</a></div>
+				<div class="lien"><a id="lienArr" href="#ongletArr">Arrondissements</a></div>
+			</nav>
+			<div>
+				<div id="ongletZap" class="onglet ouvert">
+					<div class="onglet-contenu">
+						<!-- <h1>Bornes ZAP</h1> -->
+						<ul id="lstZap"></ul>
 					</div>
 				</div>
-			</div>
+				<div id="ongletArr" class="onglet ferme">
+					<div class="onglet-contenu">
+						<!-- <h1>Arrondissements</h1> -->
+						<div  id="lstArr">
+							<a href="#" id="selectAll">Tout sélectionner</a>
+							<a href="#" id="unselectAll">Tout désélectionner</a>
+						</div>
+					</div>
+				</div>
 
-			<div id="rtc">
-				<label><input type="checkbox" id="chkBoxRtc" />Afficher les trajets du RTC</label>
+				<div id="rtc">
+					<label><input type="checkbox" id="chkBoxRtc" />Afficher les trajets du RTC</label>
+					</div>
 				</div>
 			</div>
 		</div>
 	<div id="carte-canvas"></div>
-	
 </body>
 </html>

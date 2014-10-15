@@ -23,7 +23,7 @@ com.dinfogarneau.cours526.infoWindow = null;
 com.dinfogarneau.cours526.latDefaut = 46.792517671520045;
 com.dinfogarneau.cours526.longDefaut = -71.26503957969801;
 // Référence à la carte Google (variable globale).
-com.dinfogarneau.cours526.utilisateur = {};
+com.dinfogarneau.cours526.utilisateur = null;
 com.dinfogarneau.cours526.arrondissements = [];
 com.dinfogarneau.cours526.rtc = null;
 
@@ -153,7 +153,7 @@ com.dinfogarneau.cours526.ajouterZap = function(repere) {
 
 	// Création du repère sur la carte.
 	repere.placemark = cdc.ajouterPlacemark(posRepere, "zap", options);
-
+	repere.avis = [];
 	google.maps.event.addListener(repere.placemark, "click", function() {
 
 		cdc.afficherInfoRepere(repere);
@@ -212,11 +212,106 @@ com.dinfogarneau.cours526.afficherInfoRepere = function(repere) {
 	cdc.carte.panTo(repere.placemark.getPosition());
 }
 com.dinfogarneau.cours526.getInfoWindow = function(repere) {
-	var div = document.createElement("div");
-	var h1 = document.createElement("h1");
-	h1.appendChild(document.createTextNode(repere.nomBati));
-	div.appendChild(h1);
-	return div;
+
+	var html = '<div class="infoWindow">' +
+		'<div class="adresse">' +
+			'<h1>'+repere.nomBati+'</h1>' +
+			'<div>'+repere.noCiv + " " + repere.rue+'</div>' +
+			'<div>'+repere.arrond+'</div>' +
+		'</div>' +
+		'<div class="avis">' +
+			'<h1>Avis des utilisateurs</h1>' +
+			'<div class="listeAvis">' +
+				'<div class="rien">Il n\'y a présentement aucun avis sur cette zap</div>' + 
+			'</div>' +
+			'<h2>Avis personnel</h2>' +
+			'<form>' +
+				'<textarea rows="5" name="avisUtilisateur" placeholder="Laissez un avis sur cette ZAP"></textarea>' +
+				'<button type="submit">Envoyer</button>' +
+			'</form>' +
+		'</div>' +
+	'</div>' ;
+
+	var infoWindow = document.createElement("div");
+	infoWindow.className = "infoWindow";
+
+	var adresse = document.createElement("div");
+	adresse.className = "adresse";
+
+	var h1NomBati = document.createElement("h1");
+	h1NomBati.appendChild(document.createTextNode(repere.nomBati));
+
+	var divNoRue = document.createElement("div");
+	divNoRue.appendChild(document.createTextNode(repere.noCiv + " " + repere.rue));
+
+	var divArrond = document.createElement("div");
+	divArrond.appendChild(document.createTextNode(repere.arrond));
+	
+	adresse.appendChild(h1NomBati);
+	adresse.appendChild(divNoRue);	
+	adresse.appendChild(divArrond);
+
+	infoWindow.appendChild(adresse);
+
+	var divAvis = document.createElement("div");
+	divAvis.className = "avis";
+
+	var h1AvisUti = document.createElement("h1");
+	h1AvisUti.appendChild(document.createTextNode("Avis des utilisateurs"));
+
+	var divListeAvis = document.createElement("div");
+	divListeAvis.className = "listeAvis";
+
+	if(repere.avis.length == 0)
+	{
+		var imgChargement = document.createElement("img");
+		imgChargement.src = "images/ajax-loader.gif";
+		divListeAvis.appendChild(imgChargement);	
+	}
+	else
+	{
+		for (var i = 0; i < repere.avis.length; i++) {
+			var divAvisUti = document.createElement("div");
+			var p = document.createElement("p");
+			p.appendChild(document.createTextNode("« " + repere.avis[i].message + " »"));
+			divAvisUti.appendChild(p);
+			divListeAvis.appendChild(divAvisUti);
+		};
+	}
+
+
+
+	var h2AvisPerso = document.createElement("h2");
+	h2AvisPerso.appendChild(document.createTextNode("Avis personnel"));
+
+	var form = document.createElement("form");
+
+	var textarea = document.createElement("textarea");
+	textarea.name = "avis";
+	textarea.placeholder = "Laissez un avis sur cette ZAP";
+	textarea.rows = 5;
+
+	var button = document.createElement("button");
+	button.type = "submit";
+	button.appendChild(document.createTextNode("Envoyer"));
+
+	form.appendChild(textarea);
+	form.appendChild(button);
+
+	form.addEventListener("submit",function(e){
+		e.preventDefault();
+		repere.avis.push({"message":this["avis"].value.trim()});
+		com.dinfogarneau.cours526.afficherInfoRepere(repere);
+	});
+
+	divAvis.appendChild(h1AvisUti);
+	divAvis.appendChild(divListeAvis);
+	divAvis.appendChild(h2AvisPerso);
+	divAvis.appendChild(form);
+
+	infoWindow.appendChild(divAvis);
+
+	return infoWindow;
 }
 
 
@@ -317,7 +412,7 @@ com.dinfogarneau.cours526.initInterfaceRtc = function()
 {
 	var cdc = com.dinfogarneau.cours526;
 	cdc.rtc = new google.maps.KmlLayer({
-		url: "http://webequinox.net/kml/rt-trajets.kml"
+		url: "http://webequinox.net/kml/rtc-trajets.kml"
 	});
 
 	document.getElementById("chkBoxRtc").addEventListener("change", function(){
@@ -362,7 +457,19 @@ com.dinfogarneau.cours526.initLiens = function(){
 			onglet.className = onglet.className.replace("ferme","ouvert");
 		});
 	}
+	panneau.getElementsByClassName("fermer")[0].addEventListener("click", function(e){
+		e.preventDefault();
+		if(panneau.className.search("panneau-ouvert") > -1)
+		{
+			panneau.className = panneau.className.replace("panneau-ouvert", "panneau-ferme");
+		}
+		else
+		{
+			panneau.className = panneau.className.replace("panneau-ferme", "panneau-ouvert");
+		}
+	});
 }
 com.dinfogarneau.cours526.showInterface = function() {
-	document.getElementById("panneau").style.left="0";
+	var panneau = document.getElementById("panneau");
+	panneau.className = panneau.className.replace("panneau-ferme", "panneau-ouvert");
 }
