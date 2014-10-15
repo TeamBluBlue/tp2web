@@ -21,16 +21,16 @@ try {
 			num_civil VARCHAR(5),
 			nom_batiment VARCHAR(50),
 			rue VARCHAR(50),
-			latitude DECIMAL(18,14),
-			longitude DECIMAL(18,14),
+			latitude DECIMAL(18,14) NOT NULL,
+			longitude DECIMAL(18,14) NOT NULL,
 			PRIMARY KEY (nom)
 			) ENGINE=InnoDB
 EOSQL;
 	$reqCreationTableAvis = <<<EOSQL
 			CREATE TABLE IF NOT EXISTS avis(
 			id INT NOT NULL AUTO_INCREMENT,
-			zap VARCHAR(7),
-			message TEXT,
+			zap VARCHAR(7) NOT NULL,
+			message TEXT NOT NULL,
 			PRIMARY KEY (id),
 			CONSTRAINT FK_zap FOREIGN KEY (zap) REFERENCES zap(nom))
 EOSQL;
@@ -68,14 +68,12 @@ $prepZap = $connBD->prepare($reqAjoutZap);
 foreach($xml->Document->Folder->Placemark as $placemark)
 {
 	$nom = $placemark->name;
-	
-	foreach ($placemark->ExtendedData->SchemaData as $schemaData){
-		$arrondissement = $schemaData->SimpleData[0];
-		$noCivil = $schemaData->SimpleData[1];
-		$nomBatiment = $schemaData->SimpleData[2];
-		$rue = $schemaData->SimpleData[3];
+
+	$nomsRemplacement = array("NOM_BATI" => "nomBatiment", "ARROND" => "arrondissement", "NO_CIV" => "noCivil", "RUE" => "rue");
+	$infos = array();
+	foreach ($placemark->ExtendedData->SchemaData->SimpleData as $simpleData){
+		$infos[$nomsRemplacement[(string) $simpleData->attributes()["name"]]] = $simpleData;
 	}
-	
 	$chaineCoordonnees = $placemark->Point->coordinates;
 	$elementsCoordonnes = split(",", $chaineCoordonnees);
 	
@@ -92,15 +90,15 @@ foreach($xml->Document->Folder->Placemark as $placemark)
 		try{
 			$prepZap->execute(array(
 				"nom" => $nom,
-				"arrondissement" => $arrondissement,
-				"num_civil" => $noCivil,
-				"nom_batiment" => $nomBatiment,
-				"rue" => $rue,
+				"arrondissement" => $infos["arrondissement"],
+				"num_civil" => $infos["noCivil"],
+				"nom_batiment" => $infos["nomBatiment"],
+				"rue" => $infos["rue"],
 				"latitude" => $lat,
 				"longitude" => $long
 			));
 		} catch (PDOException $e) {
-			echo "Le zap $nom n'a pu être ajouté à la BD :<br />\n".$e->getMessage();
+			echo "Le zap $nom n'a pu être ajouté à la BD :<br />\n".$e->getMessage()."<br />$noCivil\n";
 		}
 	}
 }
