@@ -1,7 +1,7 @@
 function googleMaps(){
-	var defLat = 46.7920354;
-	var defLong = -71.2946649;
-	var defAlt = 12;
+	var defLat = 46.8380946;
+	var defLong = -71.3079991;
+	var defAlt = 11;
 	
 	var defPosition = new google.maps.LatLng(defLat, defLong);
 	var optionsCarte = {
