@@ -169,5 +169,14 @@ html, body { height: 100%; margin: 0; padding: 0; }
 	font-size: inherit;
 	display: block;
 	width: 100%;
-
+}
+.avis button
+{
+	background-color: #10F;
+	padding:0.25em 0.5em;
+	border:1px outset #00D;
+	border-radius: 3px;
+	color: #FFF;
+	font: inherit;
+	font-weight: normal;
 }

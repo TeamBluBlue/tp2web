@@ -106,7 +106,7 @@ com.dinfogarneau.cours526.afficherReperesCarte = function() {
 com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {		
 	var cdc = com.dinfogarneau.cours526;
 	// Document XML retourné.
-	var docXML = cdc.xhrArr.responseXML;
+	var docXML = cdc.xhrXmlGet.responseXML;
 	var arrondissements = docXML.getElementsByTagName("Arrondissement");
 	for(var h = 0; h< arrondissements.length;h++) {
 		var points = [];
@@ -212,6 +212,7 @@ com.dinfogarneau.cours526.afficherInfoRepere = function(repere) {
 	cdc.carte.panTo(repere.placemark.getPosition());
 }
 com.dinfogarneau.cours526.getInfoWindow = function(repere) {
+	var cdc = com.dinfogarneau.cours526;
 
 	var html = '<div class="infoWindow">' +
 		'<div class="adresse">' +
@@ -266,17 +267,12 @@ com.dinfogarneau.cours526.getInfoWindow = function(repere) {
 	{
 		var imgChargement = document.createElement("img");
 		imgChargement.src = "images/ajax-loader.gif";
-		divListeAvis.appendChild(imgChargement);	
+		divListeAvis.appendChild(imgChargement);
+		cdc.chargerDonneesAvis(repere);
 	}
 	else
 	{
-		for (var i = 0; i < repere.avis.length; i++) {
-			var divAvisUti = document.createElement("div");
-			var p = document.createElement("p");
-			p.appendChild(document.createTextNode("« " + repere.avis[i].message + " »"));
-			divAvisUti.appendChild(p);
-			divListeAvis.appendChild(divAvisUti);
-		};
+		divListeAvis.appendChild(cdc.getDomAvis(repere));
 	}
 
 
@@ -300,8 +296,15 @@ com.dinfogarneau.cours526.getInfoWindow = function(repere) {
 
 	form.addEventListener("submit",function(e){
 		e.preventDefault();
+		
+		var imgChargement = document.createElement("img");
+		imgChargement.src = "images/ajax-loader-submit.gif";
+		this.appendChild(imgChargement);
+
 		repere.avis.push({"message":this["avis"].value.trim()});
-		com.dinfogarneau.cours526.afficherInfoRepere(repere);
+		cdc.getDomAvis(repere);
+		textarea.disabled=true;
+		button.disabled=true;
 	});
 
 	divAvis.appendChild(h1AvisUti);
@@ -313,8 +316,74 @@ com.dinfogarneau.cours526.getInfoWindow = function(repere) {
 
 	return infoWindow;
 }
+com.dinfogarneau.cours526.chargerDonneesAvis = function(repere){
+	var cdc = com.dinfogarneau.cours526;
+	// Création de l'objet XMLHttpRequest.
+	cdc.xhrJsonGet = new XMLHttpRequest();
 
+	var xhr = cdc.xhrJsonGet;
 
+	// Fonction JavaScript à exécuter lorsque l'état de la requête HTTP change.
+	xhr.onreadystatechange = function(){
+		cdc.chargerDonneesAvisCallback(repere);
+	}
+	
+	// Préparation de la requête HTTP-GET en mode asynchrone (true).
+	xhr.open('GET', 'ajax/ajax-json-get.php?req=avis&borne='+repere.nom, true);
+	
+	// Envoie de la requête au serveur en lui passant null (aucun contenu);
+	// lorsque la requête changera d'état; la fonction "afficherInfoProfAJAX_callback" sera appelée.
+	xhr.send(null);
+}
+
+com.dinfogarneau.cours526.chargerDonneesAvisCallback = function(repere){
+	var cdc = com.dinfogarneau.cours526;
+	var xhr = cdc.xhrJsonGet;
+	// La requête AJAX est-elle complétée (readyState=4) ?
+	if ( xhr.readyState == 4 ) {
+
+		// La requête AJAX est-elle complétée avec succès (status=200) ?
+		if ( xhr.status != 200 ) {
+			// Affichage du message d'erreur.
+			var msgErreur = 'Erreur (code=' + xhr.status + '): La requête HTTP n\'a pu être complétée.';
+			alert(msgErreur);
+			
+		} else {
+			// Création de l'objet JavaScript à partir de l'expression JSON.
+			// *** Notez l'utilisation de "responseText".
+			try { 
+				repere.avis = JSON.parse( xhr.responseText );
+			} catch (e) {
+				alert('ERREUR: La réponse AJAX n\'est pas une expression JSON valide.');
+				// Fin de la fonction.
+				return;
+			}
+
+			// Y a-t-il eu une erreur côté serveur ?
+			if ( repere.avis.erreur ) {
+				// Affichage du message d'erreur.
+				var msgErreur = 'Erreur: ' + repere.avis.erreur.message;
+				alert(msgErreur);
+				
+			} else {
+				cdc.afficherInfoRepere(repere);
+			}
+		}
+	}
+
+}
+com.dinfogarneau.cours526.getDomAvis = function(repere) {
+	var div = document.createElement("div");
+
+	for (var i = 0; i < repere.avis.length; i++) {
+		var divAvisUti = document.createElement("div");
+		var p = document.createElement("p");
+		p.appendChild(document.createTextNode("« " + repere.avis[i].message + " »"));
+		divAvisUti.appendChild(p);
+		div.appendChild(divAvisUti);
+	};
+	return div;
+}
 com.dinfogarneau.cours526.initInterface = function(){
 	var cdc = com.dinfogarneau.cours526;
 	
@@ -324,7 +393,6 @@ com.dinfogarneau.cours526.initInterface = function(){
 	cdc.initLiens();
 	cdc.showInterface();
 }
-
 
 com.dinfogarneau.cours526.initInterfaceZap = function(){
 	var cdc = com.dinfogarneau.cours526;

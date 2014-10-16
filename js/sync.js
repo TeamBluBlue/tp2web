@@ -48,21 +48,21 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 				}
 			}
 		},
-		"xhrZap" : {},
-		"xhrArr" : {},
-		"reperes" : {},
+		"xhrJsonGet" : null,
+		"xhrXmlGet" : null,
+		"reperes" : null,
 		"chargerDonneesZap" : function () {
 			var cdc = com.dinfogarneau.cours526;
 			// Création de l'objet XMLHttpRequest.
-			cdc.xhrZap = new XMLHttpRequest();
+			cdc.xhrJsonGet = new XMLHttpRequest();
 
-			var xhr = cdc.xhrZap;
+			var xhr = cdc.xhrJsonGet;
 
 			// Fonction JavaScript à exécuter lorsque l'état de la requête HTTP change.
 			xhr.onreadystatechange = cdc.chargerDonneesZapCallback;
 			
 			// Préparation de la requête HTTP-GET en mode asynchrone (true).
-			xhr.open('GET', 'ajax/ajax-json-get.php', true);
+			xhr.open('GET', 'ajax/ajax-json-get.php?req=zap', true);
 			
 			// Envoie de la requête au serveur en lui passant null (aucun contenu);
 			// lorsque la requête changera d'état; la fonction "afficherInfoProfAJAX_callback" sera appelée.
@@ -72,7 +72,7 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 		// Callback de la requête AJAX qui demande et affiche les informations d'un professeur.
 		"chargerDonneesZapCallback" : function () {
 			var cdc = com.dinfogarneau.cours526;
-			var xhr = cdc.xhrZap;
+			var xhr = cdc.xhrJsonGet;
 			// La requête AJAX est-elle complétée (readyState=4) ?
 			if ( xhr.readyState == 4 ) {
 
@@ -119,11 +119,11 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 			var erreur = false;
 
 			// Utilisation d'un objet "XMLHttpRequest" pour effectuer le chargement.
-			cdc.xhrArr = new XMLHttpRequest();
+			cdc.xhrXmlGet = new XMLHttpRequest();
 
 			// Tentative de création de l'objet "XMLHttpRequest".
 			try  {
-				cdc.xhrArr = new XMLHttpRequest();
+				cdc.xhrXmlGet = new XMLHttpRequest();
 			} catch (e) {
 				alert('Erreur: Impossible de créer l\'objet XMLHttpRequest');
 				erreur = true;
@@ -132,7 +132,7 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 			// On continue si l'objet "XMLHttpRequest" a été créé avec succès.
 			if ( ! erreur )
 			{
-				var xhr = cdc.xhrArr;
+				var xhr = cdc.xhrXmlGet;
 				// Fonction à appeler lorsque l'état de la requête change (callback).
 				xhr.onreadystatechange = cdc.chargerDonneesArrCallback;
 				// Configuration de la requête (GET) en mode asynchrone (true).
@@ -147,7 +147,7 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 		"chargerDonneesArrCallback" : function() {
 			var cdc = com.dinfogarneau.cours526;
 
-			var xhr = cdc.xhrArr;
+			var xhr = cdc.xhrXmlGet;
 			// La requête est-elle complétée (readyState=4)  ?  Sinon, rien à faire pour le moment.
 			if( xhr.readyState == 4 )
 			{
