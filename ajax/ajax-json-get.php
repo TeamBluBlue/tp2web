@@ -151,5 +151,4 @@ elseif ($_GET["req"] == "avis") {
 		echo "}\n";
 	}
 }
-sleep(0.75);
 ?>
