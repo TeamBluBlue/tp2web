@@ -16,8 +16,10 @@ com.dinfogarneau.cours526.traitementPostChargement = function() {
 	console.log('Interface HTML');
 	cdc.initInterface();
 }
+
 // Référence à la carte Google (variable globale).
 com.dinfogarneau.cours526.carte = null;
+com.dinfogarneau.cours526.xhrJsonPost = null;
 com.dinfogarneau.cours526.infoWindow = null;
 // Position par défaut (Cégep Garneau).
 com.dinfogarneau.cours526.latDefaut = 46.792517671520045;
@@ -40,6 +42,10 @@ com.dinfogarneau.cours526.initCarte = function() {
 	// Création de la carte Google (avec les options)
 	// tout en spécifiant dans quel élément HTML elle doit être affichée.
 	cdc.carte = new google.maps.Map(document.getElementById("carte-canvas"), optionsCarte);
+	// Utilisation de la position par défaut.
+	var positionInit = new google.maps.LatLng(cdc.latDefaut, cdc.longDefaut);
+	// Centrage de la carte sur la bonne coordonnée.
+	cdc.carte.setCenter(positionInit);
 
 	// Est-ce que le navigateur supporte la géolocalisation ?
 	if ( typeof navigator.geolocation != "undefined" ) {
@@ -49,10 +55,6 @@ com.dinfogarneau.cours526.initCarte = function() {
 	} else {
 		// Pas de support de la géolocalisation.
 		console.log('Le navigateur NE supporte PAS la géolocalisation.');
-		// Utilisation de la position par défaut.
-		var positionInit = new google.maps.LatLng(cdc.latDefaut, cdc.longDefaut);
-		// Centrage de la carte sur la bonne coordonnée.
-		cdc.carte.setCenter(positionInit);
 	}
 }  // Fin de la fonction "initCarte"
 
@@ -63,7 +65,7 @@ com.dinfogarneau.cours526.getCurrentPositionSuccess = function (position) {
 	// Utilisation de la position de l'utilisateur.
 	console.log('Position obtenue : ' + position.coords.latitude + ', ' + position.coords.longitude);
 	var position = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-	cdc.carte.setCenter(position);
+	cdc.carte.panTo(position);
 	cdc.setPositionUtilisateur(position);
 }
 
@@ -72,8 +74,6 @@ com.dinfogarneau.cours526.getCurrentPositionError = function (erreur) {
 	var cdc = com.dinfogarneau.cours526;
 	// Utilisation de la position par défaut.
 	console.log('Utilisation de la position par défaut.');
-	var position = new google.maps.LatLng(cdc.latDefaut, cdc.longDefaut);
-	cdc.carte.setCenter(position);
 }
 
 com.dinfogarneau.cours526.setPositionUtilisateur = function(position) {
@@ -148,7 +148,8 @@ com.dinfogarneau.cours526.ajouterZap = function(repere) {
 	var posRepere = new google.maps.LatLng(repere.lat, repere.long);
 
 	var options = {
-		"clickable": true
+		"clickable": true,
+		"title": repere.nomBati
 		};
 
 	// Création du repère sur la carte.
@@ -176,6 +177,7 @@ com.dinfogarneau.cours526.ajouterPlacemark = function(position, type, options) 
 			opts.icon="images/wifi.png";
 			break;
 		case "utilisateur":
+			opts.title = "Vous êtes ici";
 			opts.icon="images/smiley_happy.png";
 			break;
 	}
@@ -207,16 +209,21 @@ com.dinfogarneau.cours526.preparerInfoWindow = function(repere) {
 		cdc.afficherInfoWindow(repere);
 	}
 }
-com.dinfogarneau.cours526.afficherInfoWindow = function(repere){
+com.dinfogarneau.cours526.afficherInfoWindow = function(repere, avecFormulaire){
 	var cdc = com.dinfogarneau.cours526;
 	if(cdc.infoWindow != null)
 	{
 		console.log("Fermeture de l'infowindow");
 		cdc.infoWindow.close();
 	}
+	if(avecFormulaire == null)
+	{
+		avecFormulaire = true;
+	}
+
 	console.log("Création de l'infowindow");
 	cdc.infoWindow = new google.maps.InfoWindow({
-			content: cdc.getInfoWindow(repere)
+			content: cdc.getInfoWindow(repere, avecFormulaire)
 		});
 
 	cdc.infoWindow.open(cdc.carte, repere.placemark);
@@ -224,27 +231,8 @@ com.dinfogarneau.cours526.afficherInfoWindow = function(repere){
 	// Recentrage de la carte sur le nouveau repère.
 	cdc.carte.panTo(repere.placemark.getPosition());
 }
-com.dinfogarneau.cours526.getInfoWindow = function(repere) {
+com.dinfogarneau.cours526.getInfoWindow = function(repere, avecFormulaire) {
 	var cdc = com.dinfogarneau.cours526;
-
-	var html = '<div class="infoWindow">' +
-		'<div class="adresse">' +
-			'<h1>'+repere.nomBati+'</h1>' +
-			'<div>'+repere.noCiv + " " + repere.rue+'</div>' +
-			'<div>'+repere.arrond+'</div>' +
-		'</div>' +
-		'<div class="avis">' +
-			'<h1>Avis des utilisateurs</h1>' +
-			'<div class="listeAvis">' +
-				'<div class="rien">Il n\'y a présentement aucun avis sur cette zap</div>' + 
-			'</div>' +
-			'<h2>Avis personnel</h2>' +
-			'<form>' +
-				'<textarea rows="5" name="avisUtilisateur" placeholder="Laissez un avis sur cette ZAP"></textarea>' +
-				'<button type="submit">Envoyer</button>' +
-			'</form>' +
-		'</div>' +
-	'</div>' ;
 
 	var infoWindow = document.createElement("div");
 	infoWindow.className = "infoWindow";
@@ -277,47 +265,138 @@ com.dinfogarneau.cours526.getInfoWindow = function(repere) {
 	divListeAvis.className = "listeAvis";
 	divListeAvis.appendChild(cdc.getDomAvis(repere));
 
-
-
-	var h2AvisPerso = document.createElement("h2");
-	h2AvisPerso.appendChild(document.createTextNode("Avis personnel"));
-
-	var form = document.createElement("form");
-
-	var textarea = document.createElement("textarea");
-	textarea.name = "avis";
-	textarea.placeholder = "Laissez un avis sur cette ZAP";
-	textarea.rows = 5;
-
-	var button = document.createElement("button");
-	button.type = "submit";
-	button.appendChild(document.createTextNode("Envoyer"));
-
-	form.appendChild(textarea);
-	form.appendChild(button);
-
-	form.addEventListener("submit",function(e){
-		e.preventDefault();
-		
-		var imgChargement = document.createElement("img");
-		imgChargement.src = "images/ajax-loader-submit.gif";
-		this.appendChild(imgChargement);
-
-		repere.avis.push({"message":this["avis"].value.trim()});
-		cdc.getDomAvis(repere);
-		textarea.disabled=true;
-		button.disabled=true;
-	});
-
 	divAvis.appendChild(h1AvisUti);
 	divAvis.appendChild(divListeAvis);
-	divAvis.appendChild(h2AvisPerso);
-	divAvis.appendChild(form);
+
+	if(avecFormulaire)
+	{
+		var h2AvisPerso = document.createElement("h2");
+		h2AvisPerso.appendChild(document.createTextNode("Avis personnel"));
+
+		var form = document.createElement("form");
+
+		var textarea = document.createElement("textarea");
+		textarea.name = "avis";
+		textarea.placeholder = "Laissez un avis sur cette ZAP";
+		textarea.rows = 5;
+
+		var button = document.createElement("button");
+		button.type = "submit";
+		button.appendChild(document.createTextNode("Envoyer"));
+		button.disabled = true;
+
+		textarea.addEventListener("input", function(){
+			button.disabled = (this.value.trim() == "");	
+		});
+
+		form.appendChild(textarea);
+		form.appendChild(button);
+
+
+		form.addEventListener("submit",function(e){
+			e.preventDefault();
+		
+			var divChargement = document.createElement("div");
+			divChargement.className = "chargement";
+
+			var divIcone = document.createElement("div");
+			divIcone.className = "icone icone-chargement";
+			divIcone.appendChild(document.createTextNode("\u2713"));
+
+			divChargement.appendChild(divIcone);
+			this.appendChild(divChargement);
+			
+			cdc.envoyerAvisAjax(repere, this);
+			textarea.disabled=true;
+			button.disabled=true;
+		});
+		divAvis.appendChild(h2AvisPerso);
+		divAvis.appendChild(form);
+	}
+
+
 
 	infoWindow.appendChild(divAvis);
 
 	return infoWindow;
 }
+
+com.dinfogarneau.cours526.envoyerAvisAjax = function(repere, formulaire) {
+	var cdc = com.dinfogarneau.cours526;
+
+	var erreur = false;
+
+	// Création de l'objet XMLHttpRequest.
+	cdc.xhrJsonPost = new XMLHttpRequest();
+
+	try  {
+		cdc.xhrJsonPost = new XMLHttpRequest();
+	} catch (e) {
+		alert('Erreur: Impossible de créer l\'objet XMLHttpRequest');
+		erreur = true;
+	}
+	if(! erreur)
+	{
+		var xhr = cdc.xhrJsonPost;
+
+		// Fonction JavaScript à exécuter lorsque l'état de la requête HTTP change.
+		xhr.onreadystatechange = function(){
+			cdc.envoyerAvisAjaxCallback(repere, formulaire);
+		};
+				
+		// Contenu de la requête avec la méthode POST.
+		contenuPOST = JSON.stringify({"zap": repere.nom, "message": formulaire["avis"].value.trim()});
+		
+		// Préparation de la requête HTTP-POST en mode asynchrone (true).
+		xhr.open('POST', 'ajax/ajax-json-post.php', true);
+		
+		// Type de contenu de la requête.
+		xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+		
+		// Envoie de la requête au serveur en lui passant le contenu;
+		// lorsque la requête changera d'état; la fonction "envoyerAvisAjaxCallback" sera appelée.
+		xhr.send(contenuPOST);
+	}
+
+}
+
+// Callback de la requête AJAX qui demande et affiche les informations d'un professeur.
+com.dinfogarneau.cours526.envoyerAvisAjaxCallback = function(repere, formulaire) {
+	var cdc = com.dinfogarneau.cours526;
+	var xhr = cdc.xhrJsonPost;
+
+	// La requête AJAX est-elle complétée (readyState=4) ?
+	if ( xhr.readyState == 4 ) {
+
+		// La requête AJAX est-elle complétée avec succès (status=200) ?
+		if ( xhr.status != 200 ) {
+			// Affichage du message d'erreur.
+			alert('Erreur (code=' + xhr.status + '): La requête HTTP n\'a pu être complétée.');		
+		} else {
+			// Création de l'objet JavaScript à partir de l'expression JSON.
+			try { 
+				var reponse = JSON.parse( xhr.responseText );
+			} catch (e) {
+				alert('ERREUR: La réponse AJAX n\'est pas une expression JSON valide.');
+				// Fin de la fonction.
+				return;
+			}
+
+			// Y a-t-il eu une erreur côté serveur ?
+			if ( reponse.erreur ) {
+				// Affichage du message d'erreur.
+				alert('Erreur: ' + reponse.erreur.message);				
+			} else {
+				var icone = formulaire.lastChild.firstChild;
+				icone.className = icone.className.replace("icone-chargement","").trim();
+				repere.avis.push(reponse);
+				cdc.afficherInfoWindow(repere, false);
+			}
+
+		}
+	}
+}  // Fin de "afficherInfoProfAjaxCallback" 
+
 com.dinfogarneau.cours526.chargerDonneesAvis = function(repere){
 	var cdc = com.dinfogarneau.cours526;
 	// Création de l'objet XMLHttpRequest.
@@ -381,7 +460,7 @@ com.dinfogarneau.cours526.getDomAvis = function(repere) {
 	for (var i = 0; i < repere.avis.length; i++) {
 		var divAvisUti = document.createElement("div");
 		var p = document.createElement("p");
-		p.appendChild(document.createTextNode("« " + repere.avis[i].message + " »"));
+		p.appendChild(document.createTextNode("« " + repere.avis[i].message + " »"));
 		divAvisUti.appendChild(p);
 		div.appendChild(divAvisUti);
 	};

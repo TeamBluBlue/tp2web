@@ -168,14 +168,15 @@ html, body { height: 100%; margin: 0; padding: 0; }
 }
 .avis textarea
 {
-	/*margin:2px;*/
 	font-family: inherit;
 	font-size: inherit;
 	display: block;
 	width: 99%;
+	resize:vertical;
 }
 .avis button
 {
+	cursor: pointer;
 	background-color: #10F;
 	padding:0.25em 0.5em;
 	border:1px outset #00D;
@@ -183,8 +184,30 @@ html, body { height: 100%; margin: 0; padding: 0; }
 	color: #FFF;
 	font: inherit;
 	font-weight: normal;
+	display: inline-block;
 }
-.avis img
+.avis button:disabled
 {
-	line-height: 2em;
+	background-color: rgba(17,0,255,0.5);
+	border-color: rgba(0,0,221,0.5)
+}
+.chargement
+{
+	display: inline-block;
+	height: 1em;
+	margin-left: 0.5em;
+}
+.icone
+{
+	width: 16px;
+	height: 16px;
+	border-radius: 8px;
+	background:#0A0;
+	color:#FFF;
+	text-align: center;
+}
+.icone-chargement
+{
+	color:transparent;
+	background: url("../images/ajax-loader-submit.gif") no-repeat;
 }

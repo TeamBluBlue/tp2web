@@ -6,6 +6,11 @@ if(typeof com.dinfogarneau == 'undefined') {
 }
 if(typeof com.dinfogarneau.cours526 == 'undefined') {
 	com.dinfogarneau.cours526 = {
+		"elementsCharges" : {"dom": false, "zap": false, "arrondissements": false, "api-google-map": false, "async": false},
+		"xhrJsonGet" : null,
+		"xhrXmlGet" : null,
+		"reperes" : null,
+
 		// Permet de charger de manière asynchrone un script
 		// et d'appeler une fonction de callback après le chargement.
 		"chargerScriptAsync" : function (urlFichier, callbackFct) {
@@ -20,8 +25,6 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 		},
 
 		// Indique quels éléments ont déjà été chargés.
-		"elementsCharges" : {"dom": false, "zap": false, "arrondissements": false, "api-google-map": false},
-
 		// Fonction contrôlant le chargement asynchrone de divers éléments.
 		"controleurChargement" : function (nouvElemCharge) {
 			var cdc = com.dinfogarneau.cours526;
@@ -48,25 +51,44 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 				}
 			}
 		},
-		"xhrJsonGet" : null,
-		"xhrXmlGet" : null,
-		"reperes" : null,
+		// Fonction appelée pour indiquer que l'API Google Map est chargé.
+		"apiGoogleMapCharge" : function () {
+				console.log('API Google Map chargé.');
+				// On informe le contrôleur (une simple fonction) que l'API Google Map est chargé.
+				com.dinfogarneau.cours526.controleurChargement("api-google-map");
+		},
 		"chargerDonneesZap" : function () {
 			var cdc = com.dinfogarneau.cours526;
+
+			// Variable indiquant s'il y a une erreur jusqu'à présent.
+			var erreur = false;
+
 			// Création de l'objet XMLHttpRequest.
 			cdc.xhrJsonGet = new XMLHttpRequest();
 
-			var xhr = cdc.xhrJsonGet;
+			// Tentative de création de l'objet "XMLHttpRequest".
+			try  {
+				cdc.xhrJsonGet = new XMLHttpRequest();
+			} catch (e) {
+				alert('Erreur: Impossible de créer l\'objet XMLHttpRequest');
+				erreur = true;
+			}
 
-			// Fonction JavaScript à exécuter lorsque l'état de la requête HTTP change.
-			xhr.onreadystatechange = cdc.chargerDonneesZapCallback;
-			
-			// Préparation de la requête HTTP-GET en mode asynchrone (true).
-			xhr.open('GET', 'ajax/ajax-json-get.php?req=zap', true);
-			
-			// Envoie de la requête au serveur en lui passant null (aucun contenu);
-			// lorsque la requête changera d'état; la fonction "afficherInfoProfAJAX_callback" sera appelée.
-			xhr.send(null);
+			if ( ! erreur )
+			{
+
+				var xhr = cdc.xhrJsonGet;
+
+				// Fonction JavaScript à exécuter lorsque l'état de la requête HTTP change.
+				xhr.onreadystatechange = cdc.chargerDonneesZapCallback;
+				
+				// Préparation de la requête HTTP-GET en mode asynchrone (true).
+				xhr.open('GET', 'ajax/ajax-json-get.php?req=zap', true);
+				
+				// Envoie de la requête au serveur en lui passant null (aucun contenu);
+				// lorsque la requête changera d'état; la fonction "afficherInfoProfAJAX_callback" sera appelée.
+				xhr.send(null);
+			}
 
 		},
 		// Callback de la requête AJAX qui demande et affiche les informations d'un professeur.
@@ -84,7 +106,6 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 					
 				} else {
 					// Création de l'objet JavaScript à partir de l'expression JSON.
-					// *** Notez l'utilisation de "responseText".
 					try { 
 						cdc.reperes = JSON.parse( xhr.responseText );
 					} catch (e) {
@@ -96,9 +117,7 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 					// Y a-t-il eu une erreur côté serveur ?
 					if ( cdc.reperes.erreur ) {
 						// Affichage du message d'erreur.
-						var msgErreur = 'Erreur: ' + cdc.reperes.erreur.message;
-						$('msg-erreur').textContent = msgErreur;
-						
+						alert('Erreur: ' + cdc.reperes.erreur.message);						
 					} else {
 						cdc.controleurChargement("zap");
 					}
@@ -106,12 +125,7 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 			}
 		},
 		
-		// Fonction appelée pour indiquer que l'API Google Map est chargé.
-		"apiGoogleMapCharge" : function () {
-				console.log('API Google Map chargé.');
-				// On informe le contrôleur (une simple fonction) que l'API Google Map est chargé.
-				com.dinfogarneau.cours526.controleurChargement("api-google-map");
-		},
+
 		"chargerDonneesArr" : function() {	
 			var cdc = com.dinfogarneau.cours526;
 
@@ -175,5 +189,5 @@ window.addEventListener('DOMContentLoaded', function() {
 		cdc.chargerDonneesArr();
 		cdc.chargerDonneesZap();
 		cdc.chargerScriptAsync('https://maps.googleapis.com/maps/api/js?sensor=true&callback=com.dinfogarneau.cours526.apiGoogleMapCharge&libraries=geometry', null);
-		cdc.chargerScriptAsync('js/async.js', null);
+		cdc.chargerScriptAsync('js/async.js', cdc.controleurChargement("async"));
 	}, false);
