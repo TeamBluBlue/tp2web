@@ -198,6 +198,7 @@ com.dinfogarneau.cours526.ajouterArr = function(code,nom,points) {
 // Fonction appelée pour gérer le click sur un repère.
 com.dinfogarneau.cours526.afficherInfoRepere = function(repere) {
 	var cdc = com.dinfogarneau.cours526;
+	console.log(cdc.infoWindow);
 	if(cdc.infoWindow != null)
 	{
 		cdc.infoWindow.close();
@@ -329,7 +330,7 @@ com.dinfogarneau.cours526.chargerDonneesAvis = function(repere){
 	}
 	
 	// Préparation de la requête HTTP-GET en mode asynchrone (true).
-	xhr.open('GET', 'ajax/ajax-json-get.php?req=avis&borne='+repere.nom, true);
+	xhr.open('GET', 'ajax/ajax-json-get.php?req=avis&borne='+repere.id, true);
 	
 	// Envoie de la requête au serveur en lui passant null (aucun contenu);
 	// lorsque la requête changera d'état; la fonction "afficherInfoProfAJAX_callback" sera appelée.

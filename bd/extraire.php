@@ -84,8 +84,8 @@ foreach($xml->Document->Folder->Placemark as $placemark)
 		$long = null;
 	}
 	else{
-		$lat = (float) $elementsCoordonnes[0];
-		$long = (float) $elementsCoordonnes[1];
+		$lat = (float) $elementsCoordonnes[1];
+		$long = (float) $elementsCoordonnes[0];
 	}
 	
 	if ($lat !== null && $long !== null){
