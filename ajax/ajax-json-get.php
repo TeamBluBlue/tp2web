@@ -9,96 +9,147 @@ header("Pragma: no-cache");
 
 require_once("../include/param-bd.inc.php");
 
+// Connexion à la BD
 try {
+	$connBD = null;
 	$connBD = new PDO("mysql:host=$dbHote;dbname=$dbNom", $dbUtilisateur, $dbMotPasse, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
 	$connBD->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-	
 } catch (PDOException $e) {
-	$erreur = "Erreur lors de la connexion à la BD :\n".$e->getMessage();
+	echo "{\n";
+	echo "\t\"erreur\": {\n";
+	echo "\t\t\"message\": ".json_encode("Erreur lors de la connexion à la BD : ".$e->getMessage())."\n";
+	echo "\t}\n";
+	echo "}\n";
 }
-if (empty($erreur))
+
+if($_GET["req"] == "zap")
 {
-	if($_GET["req"] == "zap")
-	{
-		echo "[\n";
-		$xml = simplexml_load_file("http://donnees.ville.quebec.qc.ca/Handler.ashx?id=29&f=KML");
-		$nb = $xml->Document->Folder->Placemark->count();
-		$i = 0;
-		foreach($xml->Document->Folder->Placemark as $placemark)
-		{
-			$zapNom = $placemark->name;
-			$i++;
-			$coordonnees = split(",", $placemark->Point->coordinates);
+	// Début de l'exportation en JSON
 
-			$zapLong = trim($coordonnees[0]);
-			$zapLat = trim($coordonnees[1]);
-
-			if(!empty($zapLat) && !empty($zapLong))
-			{
-				echo "\t{\n";
-				echo "\t\t\"nom\": \"$zapNom\",\n";
-				$nomsRemplacement = array("NOM_BATI" => "nomBati", "ARROND" => "arrond", "NO_CIV" => "noCiv", "RUE" => "rue");
-				foreach($placemark->ExtendedData->SchemaData->SimpleData as $sd)
-				{
-					echo "\t\t\"".$nomsRemplacement[(string) $sd->attributes()["name"]]."\": \"$sd\",\n";
-				}
-				echo "\t\t\"lat\": \"$zapLat\",\n";
-				echo "\t\t\"long\": \"$zapLong\"\n";
-				echo "\t}";
-				if($i < $nb)
-				{
-					echo ",";
-				}
-				echo "\n";
-			}
-
+	// Récupérer les ZAP de la BD
+	try{
+		// Rcupérer les ZAP seulement si la connexion à la BD a fonctionné
+		if ($connBD !== null){
+			$req = null;
+			$req = $connBD->query("SELECT * FROM zap");
 		}
-		echo "]\n";
+	} catch (PDOException $e) {
+		echo "{\n";
+		echo "\t\"erreur\": {\n";
+		echo "\t\t\"message\": ".json_encode("Erreur lors de la récupération des ZAP : ".$e->getMessage())."\"\n";
+		echo "\t}\n";
+		echo "}\n";
 	}
-	elseif ($_GET["req"] == "avis") {
 
-		try {
-			$req = $connBD->prepare("SELECT message FROM avis WHERE zap = :zap");
-			$req->execute(array(
-				"zap" => $_GET["borne"] // C'est la borne identity
-				));	
-		} catch (PDOException $e) {
-			$erreur = "Erreur lors de la lecture des messages :\n".$e->getMessage();
-		}
-		if(empty($erreur))
-		{
+	// Exporter les ZAP en JSON
+	try{
+		// Exporter les ZAP seulement si la récupération des ZAP a fonctionné
+		if ($req !== null){
+			// Variables servant à faire des traitements particuliers selon le numnéro
+			// de rangée atteint
+			$nbrRangees = $req->rowCount();
+			$i = 1;
+			
 			echo "[\n";
-			$messages = $req->fetchAll();
-			$count = count($messages);
-			for ($i=0; $i < $count; $i++) { 
+			// Écrire chaque information sur une ligne différente pour chaque ZAP
+			while ($zap = $req->fetch()){
 				echo "\t{\n";
-				echo "\t\t\"message\": ".json_encode($messages[$i]["message"])."\n";
+				echo "\t\t\"nom\": \"".$zap["nom"]."\",\n";
+				echo "\t\t\"arrond\": \"".$zap["arrondissement"]."\",\n";
+				echo "\t\t\"noCiv\": \"".$zap["num_civil"]."\",\n";
+				echo "\t\t\"nomBati\": \"".$zap["nom_batiment"]."\",\n";
+				echo "\t\t\"rue\": \"".$zap["rue"]."\",\n";
+				echo "\t\t\"lat\": \"".$zap["latitude"]."\",\n";
+				echo "\t\t\"long\": \"".$zap["longitude"]."\"\n";
 				echo "\t}";
-				if($i < $count-1)
-				{
+				
+				// Ajouter une virgule suite à l'accolade fermante si ce ZAP
+				// n'est pas le dernier
+				if ($i < $nbrRangees){
 					echo ",";
 				}
+				
+				echo "\n";
+				
+				$i++;
+			}
+				echo "]\n";
+			
+			$req->closeCursor();
+		}
+	} catch (PDOException $e) {
+		echo "{\n";
+		echo "\t\"erreur\": {\n";
+		echo "\t\t\"erreur\": ".json_encode("Erreur lors de l'exportation JSON des ZAP : ".$e->getMessage())."\n";
+		echo "\t}\n";
+		echo "}\n";
+	} catch (Exception $ex) {
+		echo "{\n";
+		echo "\t\"erreur\": {\n";
+		echo "\t\t\"message\": ".json_encode("Erreur inattendue lors de l'exportation JSON des ZAP : ".$ex->getMessage())."\n";
+		echo "\t}\n";
+		echo "}\n";
+	}
+// Fin de l'exportation JSON
+}
+elseif ($_GET["req"] == "avis") {
+
+	try {
+		$req = $connBD->prepare("SELECT message FROM avis WHERE zap = :zap");
+		$req->execute(array(
+			"zap" => $_GET["borne"] // C'est la borne identity
+			));	
+	} catch (PDOException $e) {
+		echo "{\n";
+		echo "\t\"erreur\": {\n";
+		echo "\t\t\"message\": ".json_encode("Erreur lors de la récupération des messages : ".$e->getMessage())."\"\n";
+		echo "\t}\n";
+		echo "}\n";
+	}
+	try{
+		// Exporter les messages seulement si la récupération des messages a fonctionné
+		if ($req !== null){
+
+				// Variables servant à faire des traitements particuliers selon le numnéro
+			// de rangée atteint
+			$nbrRangees = $req->rowCount();
+			$i = 1;
+			
+			echo "[\n";
+			while ($avis = $req->fetch()){
+				echo "\t{\n";
+				echo "\t\t\"message\": ".json_encode($avis["message"])."\n";
+				echo "\t}";
+				
+				// Ajouter une virgule suite à l'accolade fermante si cet avis
+				// n'est pas le dernier
+				if ($i < $nbrRangees){
+					echo ",";
+				}
+				
+				echo "\n";
+				
+				$i++;
+
 				echo "\n";
 			}
 			echo "]\n";
+		}
+		$req->closeCursor();
 
-		}
-		else
-		{
-			echo "\t{\n";
-			echo "\t\t\"erreur\": {\n";
-			echo "\t\t\t\"message\":".json_encode($erreur)."\n";
-			echo "\t\t}\n";
-			echo "\t}\n";
-		}
+	} catch (PDOException $e) {
+		echo "{\n";
+		echo "\t\"erreur\": {\n";
+		echo "\t\t\"erreur\": ".json_encode("Erreur lors de l'exportation JSON des ZAP : ".$e->getMessage())."\n";
+		echo "\t}\n";
+		echo "}\n";
+	} catch (Exception $ex) {
+		echo "{\n";
+		echo "\t\"erreur\": {\n";
+		echo "\t\t\"message\": ".json_encode("Erreur inattendue lors de l'exportation JSON des ZAP : ".$ex->getMessage())."\n";
+		echo "\t}\n";
+		echo "}\n";
 	}
 }
-else
-{
-	echo "\t{\n";
-	echo "\t\t\"erreur\": {\n";
-	echo "\t\t\t\"message\":".json_encode($erreur)."\n";
-	echo "\t\t}\n";
-	echo "\t}\n";
-}
+sleep(0.75);
 ?>

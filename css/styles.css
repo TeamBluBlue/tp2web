@@ -130,7 +130,10 @@ html, body { height: 100%; margin: 0; padding: 0; }
 }
 .infoWindow
 {
-	min-width: 300px;
+	position: relative;
+	height: 100%;
+	overflow: auto;
+	-webkit-overflow-scrolling: touch;
 }
 .adresse
 {
@@ -153,6 +156,7 @@ html, body { height: 100%; margin: 0; padding: 0; }
 	margin-top: 1em;
 	border-top: 1px ridge #CCC;
 	padding-top: 1em;
+	overflow: auto;
 }
 .listeAvis
 {
@@ -164,11 +168,11 @@ html, body { height: 100%; margin: 0; padding: 0; }
 }
 .avis textarea
 {
-	margin:-1px;
+	/*margin:2px;*/
 	font-family: inherit;
 	font-size: inherit;
 	display: block;
-	width: 100%;
+	width: 99%;
 }
 .avis button
 {
@@ -179,4 +183,8 @@ html, body { height: 100%; margin: 0; padding: 0; }
 	color: #FFF;
 	font: inherit;
 	font-weight: normal;
+}
+.avis img
+{
+	line-height: 2em;
 }

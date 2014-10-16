@@ -155,8 +155,8 @@ com.dinfogarneau.cours526.ajouterZap = function(repere) {
 	repere.placemark = cdc.ajouterPlacemark(posRepere, "zap", options);
 	repere.avis = [];
 	google.maps.event.addListener(repere.placemark, "click", function() {
-
-		cdc.afficherInfoRepere(repere);
+		console.log("affichage de l'infowindow par le repère");
+		cdc.preparerInfoWindow(repere);
 	
 	});
 }
@@ -196,12 +196,25 @@ com.dinfogarneau.cours526.ajouterArr = function(code,nom,points) {
 	cdc.arrondissements.push({"code": Number(code), "nom":nom, "polygone": arrPoly});
 }
 // Fonction appelée pour gérer le click sur un repère.
-com.dinfogarneau.cours526.afficherInfoRepere = function(repere) {
+com.dinfogarneau.cours526.preparerInfoWindow = function(repere) {
+	var cdc = com.dinfogarneau.cours526;
+	if(repere.avis.length == 0)
+	{
+		cdc.chargerDonneesAvis(repere);
+	}
+	else
+	{
+		cdc.afficherInfoWindow(repere);
+	}
+}
+com.dinfogarneau.cours526.afficherInfoWindow = function(repere){
 	var cdc = com.dinfogarneau.cours526;
 	if(cdc.infoWindow != null)
 	{
+		console.log("Fermeture de l'infowindow");
 		cdc.infoWindow.close();
 	}
+	console.log("Création de l'infowindow");
 	cdc.infoWindow = new google.maps.InfoWindow({
 			content: cdc.getInfoWindow(repere)
 		});
@@ -262,18 +275,7 @@ com.dinfogarneau.cours526.getInfoWindow = function(repere) {
 
 	var divListeAvis = document.createElement("div");
 	divListeAvis.className = "listeAvis";
-
-	if(repere.avis.length == 0)
-	{
-		var imgChargement = document.createElement("img");
-		imgChargement.src = "images/ajax-loader.gif";
-		divListeAvis.appendChild(imgChargement);
-		cdc.chargerDonneesAvis(repere);
-	}
-	else
-	{
-		divListeAvis.appendChild(cdc.getDomAvis(repere));
-	}
+	divListeAvis.appendChild(cdc.getDomAvis(repere));
 
 
 
@@ -366,7 +368,8 @@ com.dinfogarneau.cours526.chargerDonneesAvisCallback = function(repere){
 				alert(msgErreur);
 				
 			} else {
-				cdc.afficherInfoRepere(repere);
+				console.log("affichage de l'infowindow par le callback");
+				cdc.preparerInfoWindow(repere);
 			}
 		}
 	}
@@ -411,7 +414,8 @@ com.dinfogarneau.cours526.ajouterElemZapInterface = function(repere){
 		a.href="#"+repere.nomBati;
 		a.addEventListener("click", function(e){
 			e.preventDefault();
-			cdc.afficherInfoRepere(repere);
+			console.log("affichage de l'infowindow par l'onglet");
+			cdc.preparerInfoWindow(repere);
 		});
 		a.appendChild(document.createTextNode(repere.nomBati));
 		li.appendChild(a);
