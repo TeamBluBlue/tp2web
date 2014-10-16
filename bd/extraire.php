@@ -84,8 +84,8 @@ foreach($xml->Document->Folder->Placemark as $placemark)
 		$long = null;
 	}
 	else{
-		$lat = (float) $elementsCoordonnes[0];
-		$long = (float) $elementsCoordonnes[1];
+		$long = (float) trim($elementsCoordonnes[0]);
+		$lat = (float) trim($elementsCoordonnes[1]);
 	}
 	
 	if ($lat !== null && $long !== null){
@@ -115,4 +115,4 @@ try{
 	echo "La clé étrangère de la table avis n'a pu être rajoutée :<br />\n".$e->getMessage();
 }
 
-$connDB = null;
+$connBD = null;
