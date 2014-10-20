@@ -151,4 +151,12 @@ elseif ($_GET["req"] == "avis") {
 		echo "}\n";
 	}
 }
+else
+{
+	echo "{\n";
+	echo "\t\"erreur\": {\n";
+	echo "\t\t\"message\": ".json_encode("Le type de la requête a été mal spécifié")."\n";
+	echo "\t}\n";
+	echo "}\n";
+}
 ?>

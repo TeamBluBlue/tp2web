@@ -8,11 +8,17 @@ com.dinfogarneau.cours526.traitementPostChargement = function() {
 	console.log('Affichage de la carte');
 	cdc.initCarte();
 
-	console.log('Affichage des repères');
-	cdc.afficherReperesCarte();
+	if(cdc.elementsCharges.zap)
+	{
+		console.log('Affichage des repères');
+		cdc.afficherReperesCarte();
+	}
 
-	console.log('Affichage des arrondissements');
-	cdc.afficherArrondissementsCarte();
+	if(cdc.elementsCharges.arrondissements)
+	{
+		console.log('Affichage des arrondissements');
+		cdc.afficherArrondissementsCarte();
+	}
 
 	console.log('Interface HTML');
 	cdc.initInterface();
@@ -91,15 +97,19 @@ com.dinfogarneau.cours526.setPositionUtilisateur = function(position) {
 
 	cdc.utilisateur = cdc.ajouterPlacemark(position, "utilisateur");
 	console.log("Calcul de la distance entre les bornes et l'utilisateur");
-	for (var i=0; i < cdc.reperes.length; i++) {
-		var repere = cdc.reperes[i].placemark;
-		if(google.maps.geometry.spherical.computeDistanceBetween(repere.getPosition(), cdc.utilisateur.getPosition())<5000)
-		{
-			repere.setIcon("images/wifi_proche.png");
-		}
-		else
-		{
-			repere.setIcon("images/wifi.png");
+
+	if(cdc.elementsCharges.zap)
+	{
+		for (var i=0; i < cdc.reperes.length; i++) {
+			var repere = cdc.reperes[i].placemark;
+			if(google.maps.geometry.spherical.computeDistanceBetween(repere.getPosition(), cdc.utilisateur.getPosition())<5000)
+			{
+				repere.setIcon("images/wifi_proche.png");
+			}
+			else
+			{
+				repere.setIcon("images/wifi.png");
+			}
 		}
 	}
 }
@@ -117,8 +127,14 @@ com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 	var cdc = com.dinfogarneau.cours526;
 	cdc.arrondissements = [];
 	// Document XML retourné.
-	var docXML = cdc.xhrXmlGet.responseXML;
-	var arrondissements = docXML.getElementsByTagName("Arrondissement");
+	try{
+		var docXML = cdc.xhrXmlGet.responseXML;
+		var arrondissements = docXML.getElementsByTagName("Arrondissement");
+	} catch(e) {
+		alert('Erreur: Impossible de lire les arrondissements');
+		cdc.elementsCharges.arrondissements = null;
+		return;
+	}
 	for(var h = 0; h< arrondissements.length;h++) {
 		var points = [];
 		var arr = arrondissements[h];
@@ -490,9 +506,14 @@ com.dinfogarneau.cours526.chargerDonneesAvisCallback = function(repere){
 
 com.dinfogarneau.cours526.initInterface = function(){
 	var cdc = com.dinfogarneau.cours526;
-	
-	cdc.initInterfaceZap();
-	cdc.initInterfaceArr();
+	if(cdc.elementsCharges.zap)
+	{	
+		cdc.initInterfaceZap();
+	}
+	if(cdc.elementsCharges.arrondissements)
+	{
+		cdc.initInterfaceArr();
+	}
 	cdc.initInterfaceRtc();
 	cdc.initLiens();
 	cdc.showInterface();

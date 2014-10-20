@@ -41,7 +41,7 @@ try {
 } catch (PDOException $e) {
 	echo "{\n";
 	echo "\t\"erreur\": {\n";
-	echo "\t\t\"message\": ".json_encode("Erreur lors de la récupération des messages : ".$e->getMessage())."\"\n";
+	echo "\t\t\"message\": ".json_encode("Erreur lors de l'insertion de l'avis : ".$e->getMessage())."\"\n";
 	echo "\t}\n";
 	echo "}\n";
 }
