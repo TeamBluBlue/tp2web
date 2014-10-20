@@ -111,7 +111,17 @@ com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 	for(var h = 0; h< arrondissements.length;h++) {
 		var points = [];
 		var arr = arrondissements[h];
-		var m = arr.getElementsByTagName("Geometrie")[0].firstChild.nodeValue.match(/\([^\(\)]+\)/g);
+		
+		var concatCoords = "";
+		var listeCoordsSeparees = arr.getElementsByTagName("Geometrie")[0].childNodes;
+		
+		// Concaténer les coordonnées séparées (se produit dans Firefox)
+		for (var f = 0; f < listeCoordsSeparees.length; f++){
+			concatCoords += listeCoordsSeparees[f].nodeValue;
+		}
+		
+		var m = concatCoords.match(/\([^\(\)]+\)/g);
+		
 		if (m !== null) {
 			for (var i = 0; i < m.length; i++) {
 				//match all numeric strings
