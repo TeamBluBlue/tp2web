@@ -7,6 +7,7 @@ header("Expires: Thu, 19 Nov 1981 08:52:00 GMT");
 header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
 header("Pragma: no-cache");
 
+//
 require_once("../include/param-bd.inc.php");
 
 // Connexion à la BD
@@ -22,8 +23,7 @@ try {
 	echo "}\n";
 }
 
-if($_GET["req"] == "zap")
-{
+if($_GET["req"] == "zap") {
 	// Début de l'exportation en JSON
 
 	// Récupérer les ZAP de la BD
@@ -42,9 +42,9 @@ if($_GET["req"] == "zap")
 	}
 
 	// Exporter les ZAP en JSON
-	try{
+	try {
 		// Exporter les ZAP seulement si la récupération des ZAP a fonctionné
-		if ($req !== null){
+		if ($req !== null) {
 			// Variables servant à faire des traitements particuliers selon le numnéro
 			// de rangée atteint
 			$nbrRangees = $req->rowCount();
@@ -52,7 +52,7 @@ if($_GET["req"] == "zap")
 			
 			echo "[\n";
 			// Écrire chaque information sur une ligne différente pour chaque ZAP
-			while ($zap = $req->fetch()){
+			while ($zap = $req->fetch()) {
 				echo "\t{\n";
 				echo "\t\t\"nom\": \"".$zap["nom"]."\",\n";
 				echo "\t\t\"arrond\": \"".$zap["arrondissement"]."\",\n";
@@ -65,7 +65,7 @@ if($_GET["req"] == "zap")
 				
 				// Ajouter une virgule suite à l'accolade fermante si ce ZAP
 				// n'est pas le dernier
-				if ($i < $nbrRangees){
+				if ($i < $nbrRangees) {
 					echo ",";
 				}
 				
@@ -73,9 +73,10 @@ if($_GET["req"] == "zap")
 				
 				$i++;
 			}
-				echo "]\n";
+			echo "]\n";
 			
 			$req->closeCursor();
+			// Fin de l'exportation JSON
 		}
 	} catch (PDOException $e) {
 		echo "{\n";
@@ -90,9 +91,7 @@ if($_GET["req"] == "zap")
 		echo "\t}\n";
 		echo "}\n";
 	}
-// Fin de l'exportation JSON
-}
-elseif ($_GET["req"] == "avis") {
+} elseif ($_GET["req"] == "avis") {
 
 	try {
 		$req = $connBD->prepare("SELECT message FROM avis WHERE zap = :zap");
@@ -106,9 +105,9 @@ elseif ($_GET["req"] == "avis") {
 		echo "\t}\n";
 		echo "}\n";
 	}
-	try{
+	try {
 		// Exporter les messages seulement si la récupération des messages a fonctionné
-		if ($req !== null){
+		if ($req !== null) {
 
 				// Variables servant à faire des traitements particuliers selon le numnéro
 			// de rangée atteint
@@ -116,14 +115,14 @@ elseif ($_GET["req"] == "avis") {
 			$i = 1;
 			
 			echo "[\n";
-			while ($avis = $req->fetch()){
+			while ($avis = $req->fetch()) {
 				echo "\t{\n";
 				echo "\t\t\"message\": ".json_encode($avis["message"])."\n";
 				echo "\t}";
 				
 				// Ajouter une virgule suite à l'accolade fermante si cet avis
 				// n'est pas le dernier
-				if ($i < $nbrRangees){
+				if ($i < $nbrRangees) {
 					echo ",";
 				}
 				
@@ -150,9 +149,7 @@ elseif ($_GET["req"] == "avis") {
 		echo "\t}\n";
 		echo "}\n";
 	}
-}
-else
-{
+} else {
 	echo "{\n";
 	echo "\t\"erreur\": {\n";
 	echo "\t\t\"message\": ".json_encode("Le type de la requête a été mal spécifié")."\n";
