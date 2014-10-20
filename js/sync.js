@@ -1,3 +1,4 @@
+// Définition du namespace com.dinfogarneau.cours526 si nécessaire
 if(typeof window.com == 'undefined') {
 	window.com = {};
 }
@@ -6,44 +7,53 @@ if(typeof com.dinfogarneau == 'undefined') {
 }
 if(typeof com.dinfogarneau.cours526 == 'undefined') {
 	com.dinfogarneau.cours526 = {
-		// Contrôleur des éléments chargés
-		"elementsCharges" : {"dom": false, "zap": false, "arrondissements": false, "api-google-map": false, "async": false},
 		
+		// Objet JSON qui contient les états de chargement des éléments à charger
+		"elementsCharges" : {"dom": false, "zap": false, "arrondissements": false, "api-google-map": false, "async": false},
+		// Objet XHR qui permet de retourner des données au format JSON (pour les ZAP et les avis)
 		"xhrJsonGet" : null,
+		// Objet XHR qui permet de retourner des données au format XML (pour les arrondissements)
 		"xhrXmlGet" : null,
+		// Variable qui contient la liste des ZAP au format JSON
 		"reperes" : null,
-
+		
 		// Permet de charger de manière asynchrone un script
-		// et d'appeler une fonction de callback après le chargement.
+		// et d'appeler une fonction de callback après le chargement
+		// "urlFichier" : URL vers le script à aller récupérer
+		// "callbackFct" : fonction qui doit être appelée une fois la requête terminée
 		"chargerScriptAsync" : function (urlFichier, callbackFct) {
 			var script = document.createElement('script');
 			script.src = urlFichier;
 			script.async = true;
-			// Fonction de callback (optionnel) après le chargement asynchrone du script.
+			// Vérifier que le paramètre "callbackFct" est réellement une fonction avant
+			// de l'appeler
 			if (typeof callbackFct == "function") {
 				script.addEventListener('load', callbackFct, false);
 			}
 			document.documentElement.firstChild.appendChild(script);
 		},
-
-		// Indique quels éléments ont déjà été chargés.
-		// Fonction contrôlant le chargement asynchrone de divers éléments.
+		
+		// Fonction contrôlant le chargement asynchrone de divers éléments
+		// "nouvElemCharge" : nom de l'élément qui a été chargé
+		// "valeur" : nouvel état de chargement de cet élément (true ou false)
 		"controleurChargement" : function (nouvElemCharge, valeur) {
 			var cdc = com.dinfogarneau.cours526;
 
 			console.log('controleurChargement: Nouvel élément chargé "' + nouvElemCharge + '".');
-			// Est-ce que c'est un élément dont le chargement doit être contrôlé ?
+			// Vérifier que le nouvel élément chargé existe dans l'objet JSON "elementsCharges"
 			if (typeof cdc.elementsCharges[nouvElemCharge] != "undefined") {
-				// Chargement effectué pour cet élément.
 				cdc.elementsCharges[nouvElemCharge] = valeur;
-				// Est-ce que tous les éléments sont chargés ?
+				
 				var tousCharge = true;
+				// Vérifier que tous les éléments ont été chargés
 				for (var elem in cdc.elementsCharges) {
+					// Tous les éléments ne sont pas chargés si une seul d'entre eux ne l'est pas
 					if (cdc.elementsCharges[elem] == false)
 						tousCharge = false;
 				}
+				
 				// Si tous les éléments ont été chargés, appel de la fonction qui
-				// fait le traitement post-chargement.
+				// fait le traitement post-chargement
 				if (tousCharge) {
 					console.log('controleurChargement: Tous les éléments ont été chargés.');
 					cdc.traitementPostChargement();
@@ -52,22 +62,19 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 				}
 			}
 		},
-		// Fonction appelée pour indiquer que l'API Google Map est chargé.
+		
+		// Fonction appelée pour indiquer que l'API Google Map est chargé
 		"apiGoogleMapCharge" : function () {
 				console.log('API Google Map chargé.');
-				// On informe le contrôleur (une simple fonction) que l'API Google Map est chargé.
 				com.dinfogarneau.cours526.controleurChargement("api-google-map", true);
 		},
+		
+		// Permet d'obtenir les données formant les ZAP
 		"chargerDonneesZap" : function () {
 			var cdc = com.dinfogarneau.cours526;
-
-			// Variable indiquant s'il y a une erreur jusqu'à présent.
 			var erreur = false;
 
-			// Création de l'objet XMLHttpRequest.
-			cdc.xhrJsonGet = new XMLHttpRequest();
-
-			// Tentative de création de l'objet "XMLHttpRequest".
+			// Tentative de création de l'objet XMLHttpRequest
 			try  {
 				cdc.xhrJsonGet = new XMLHttpRequest();
 			} catch (e) {
@@ -75,10 +82,10 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 				erreur = true;
 				cdc.controleurChargement("zap", null);
 			}
-
-			if ( ! erreur )
+			
+			// S'il n'y a pas d'erreur, continuer la création de la requête
+			if (!erreur)
 			{
-
 				var xhr = cdc.xhrJsonGet;
 
 				// Fonction JavaScript à exécuter lorsque l'état de la requête HTTP change.
