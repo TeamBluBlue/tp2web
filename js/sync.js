@@ -132,9 +132,6 @@ if(typeof com.dinfogarneau.cours526 == 'undefined') {
 			// Variable indiquant s'il y a une erreur jusqu'à présent.
 			var erreur = false;
 
-			// Utilisation d'un objet "XMLHttpRequest" pour effectuer le chargement.
-			cdc.xhrXmlGet = new XMLHttpRequest();
-
 			// Tentative de création de l'objet "XMLHttpRequest".
 			try  {
 				cdc.xhrXmlGet = new XMLHttpRequest();
