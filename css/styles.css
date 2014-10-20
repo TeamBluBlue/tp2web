@@ -188,8 +188,12 @@ html, body { height: 100%; margin: 0; padding: 0; }
 }
 .avis button:disabled
 {
-	background-color: rgba(17,0,255,0.5);
-	border-color: rgba(0,0,221,0.5);
+	background-color: #BBB;
+	border-color: #BBB;
+}
+.avis-retroaction div div:last-child
+{
+	background-color: #CFC;
 }
 .chargement
 {

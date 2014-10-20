@@ -112,3 +112,4 @@ try{
 } catch (PDOException $e) {
 	echo "La clé étrangère de la table avis n'a pu être rajoutée :<br />\n".$e->getMessage();
 }
+?>

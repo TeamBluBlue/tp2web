@@ -6,7 +6,9 @@ if(typeof com.dinfogarneau == 'undefined') {
 }
 if(typeof com.dinfogarneau.cours526 == 'undefined') {
 	com.dinfogarneau.cours526 = {
+		// Contrôleur des éléments chargés
 		"elementsCharges" : {"dom": false, "zap": false, "arrondissements": false, "api-google-map": false, "async": false},
+		
 		"xhrJsonGet" : null,
 		"xhrXmlGet" : null,
 		"reperes" : null,
