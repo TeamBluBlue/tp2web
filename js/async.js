@@ -495,6 +495,7 @@ com.dinfogarneau.cours526.envoyerAvisAjaxCallback = function(repere, formulaire)
 // "repere" : repère dont les avis doivent être chargés
 com.dinfogarneau.cours526.chargerDonneesAvis = function(repere) {
 	var cdc = com.dinfogarneau.cours526;
+	var erreur = false;
 	
 	// Tentative de création de l'objet XMLHttpRequest
 	try{
