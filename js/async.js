@@ -642,6 +642,8 @@ com.dinfogarneau.cours526.initInterfaceArr = function() {
 
 		panneau.appendChild(label);
 	}
+	
+	// Événement qui permet de sélectionner tous les arrondissements
 	document.getElementById("selectAll").addEventListener("click", function(e) {
 		e.preventDefault();
 		var inputs = document.getElementById("lstArr").getElementsByTagName("input");
@@ -650,6 +652,8 @@ com.dinfogarneau.cours526.initInterfaceArr = function() {
 			inputs[i].dispatchEvent(new Event("change"));
 		}
 	});
+	
+	// // Événement qui permet de désélectionner tous les arrondissements
 	document.getElementById("unselectAll").addEventListener("click", function(e) {
 		e.preventDefault();
 		var inputs = document.getElementById("lstArr").getElementsByTagName("input");
@@ -660,13 +664,18 @@ com.dinfogarneau.cours526.initInterfaceArr = function() {
 	});
 }
 
+// Permet d'ajouter les trajets de bus du RTC à la carte Google Maps
 com.dinfogarneau.cours526.initInterfaceRtc = function() {
 	var cdc = com.dinfogarneau.cours526;
 	cdc.rtc = new google.maps.KmlLayer({
 		url: "http://webequinox.net/kml/rtc-trajets.kml",
 		preserveViewport: true
 	});
+	
+	// Événement qui affiche ou cache les trajets à l'aide d'une case à cocher
 	document.getElementById("chkBoxRtc").addEventListener("change", function() {
+		// Si la case est cochée, afficher les trajets.
+		// Autrement, les cacher.
 		if (this.checked) {
 			cdc.rtc.setMap(cdc.carte);
 		} else {
@@ -674,20 +683,24 @@ com.dinfogarneau.cours526.initInterfaceRtc = function() {
 		}
 	});
 }
+
+// Permet de donner des comportements sur clic aux liens de navigation de l'interface HTML
 com.dinfogarneau.cours526.initLiens = function() {
 	var panneau = document.getElementById("panneau");
-
 	var nav = panneau.getElementsByClassName("nav-onglets")[0];
-
 	var liens = nav.getElementsByClassName("lien");
-
+	
+	// Parcourir les liens de navigation présents dans l'interface HTML
 	for (var i = 0; i < liens.length; i++) {
 		var lien = liens[i].getElementsByTagName("a")[0];
-
+		
+		// Événement qui active le lien cliqué pour faire afficher ce qui lui
+		// est associé
 		lien.addEventListener("click", function(e) {
 			e.preventDefault();
-
 			var courants = nav.getElementsByClassName("courant");
+			
+			// Parcourir les liens courants et leur enlever la classe "courant"
 			for (var j = 0; j < courants.length; j++) {
 				courants[j].className = courants[j].className.replace("courant", "").trim();
 			}
@@ -696,15 +709,22 @@ com.dinfogarneau.cours526.initLiens = function() {
 			this.parentNode.className = this.parentNode.className + " courant";
 
 			var onglets = panneau.getElementsByClassName("onglet");
+			
+			// Parcourir les onglets ouverts et les fermer
 			for (var i = 0; i < onglets.length; i++) {
 				onglets[i].className = onglets[i].className.replace("ouvert", "ferme");
 			};
+			
 			var onglet = document.getElementById(this.getAttribute("href").replace("#", ""));
 			onglet.className = onglet.className.replace("ferme", "ouvert");
 		});
 	}
+	
+	// Événement qui permet d'ouvrir ou fermer l'interface HTML
 	panneau.getElementsByClassName("fermer")[0].addEventListener("click", function(e) {
 		e.preventDefault();
+		
+		// Si le panneau est ouvert, le fermer. Autrement, l'ouvrir.
 		if (panneau.className.search("panneau-ouvert") > -1) {
 			panneau.className = panneau.className.replace("panneau-ouvert", "panneau-ferme");
 		} else {
@@ -712,6 +732,8 @@ com.dinfogarneau.cours526.initLiens = function() {
 		}
 	});
 }
+
+// Permet de changer l'état ouvert ou fermé de l'interface HTML
 com.dinfogarneau.cours526.showInterface = function() {
 	var panneau = document.getElementById("panneau");
 	panneau.className = panneau.className.replace("panneau-ferme", "panneau-ouvert");
