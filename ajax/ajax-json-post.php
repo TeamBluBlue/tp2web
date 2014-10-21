@@ -21,6 +21,7 @@ try {
 	echo "\t}\n";
 	echo "}\n";
 }
+
 try {
 	$json = file_get_contents("php://input");
 	$post = json_decode($json);
@@ -32,6 +33,7 @@ try {
 	echo "\t}\n";
 	echo "}\n";
 }
+
 try {
 	$req = $connBD->prepare("INSERT INTO avis (zap, message) VALUES (:zap, :message)");
 	$req->execute(array(
@@ -45,6 +47,7 @@ try {
 	echo "\t}\n";
 	echo "}\n";
 }
+
 // Exporter les messages seulement si la récupération des messages a fonctionné
 if ($req !== null) {
 	echo "{\n";

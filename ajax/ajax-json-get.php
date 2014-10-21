@@ -7,7 +7,6 @@ header("Expires: Thu, 19 Nov 1981 08:52:00 GMT");
 header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
 header("Pragma: no-cache");
 
-//
 require_once("../include/param-bd.inc.php");
 
 // Connexion à la BD
@@ -24,8 +23,6 @@ try {
 }
 
 if($_GET["req"] == "zap") {
-	// Début de l'exportation en JSON
-
 	// Récupérer les ZAP de la BD
 	try{
 		// Rcupérer les ZAP seulement si la connexion à la BD a fonctionné
@@ -109,12 +106,14 @@ if($_GET["req"] == "zap") {
 		// Exporter les messages seulement si la récupération des messages a fonctionné
 		if ($req !== null) {
 
-				// Variables servant à faire des traitements particuliers selon le numnéro
+			// Variables servant à faire des traitements particuliers selon le numnéro
 			// de rangée atteint
 			$nbrRangees = $req->rowCount();
 			$i = 1;
 			
 			echo "[\n";
+			
+			// Parcourir les avis reçus
 			while ($avis = $req->fetch()) {
 				echo "\t{\n";
 				echo "\t\t\"message\": ".json_encode($avis["message"])."\n";
@@ -127,9 +126,7 @@ if($_GET["req"] == "zap") {
 				}
 				
 				echo "\n";
-				
 				$i++;
-
 				echo "\n";
 			}
 			echo "]\n";
