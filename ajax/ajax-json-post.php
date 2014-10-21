@@ -46,7 +46,7 @@ try {
 	echo "}\n";
 }
 // Exporter les messages seulement si la récupération des messages a fonctionné
-if ($req !== null){
+if ($req !== null) {
 	echo "{\n";
 	echo "\t\"message\": ".json_encode($post->message)."\n";
 	echo "}\n";		

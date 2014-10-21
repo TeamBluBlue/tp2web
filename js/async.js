@@ -1,4 +1,3 @@
-
 // Fonction responsable des traitements post-chargement.
 com.dinfogarneau.cours526.traitementPostChargement = function() {
 	var cdc = com.dinfogarneau.cours526;
@@ -8,14 +7,12 @@ com.dinfogarneau.cours526.traitementPostChargement = function() {
 	console.log('Affichage de la carte');
 	cdc.initCarte();
 
-	if(cdc.elementsCharges.zap)
-	{
+	if (cdc.elementsCharges.zap) {
 		console.log('Affichage des repères');
 		cdc.afficherReperesCarte();
 	}
 
-	if(cdc.elementsCharges.arrondissements)
-	{
+	if (cdc.elementsCharges.arrondissements) {
 		console.log('Affichage des arrondissements');
 		cdc.afficherArrondissementsCarte();
 	}
@@ -47,36 +44,36 @@ com.dinfogarneau.cours526.rtc = null;
 
 
 com.dinfogarneau.cours526.initCarte = function() {
-	var cdc = com.dinfogarneau.cours526;
-	
-	// Object JSON pour les options de la carte (sans la position initiale).
-	var optionsCarte = {
-		"zoom": 14,
-		"mapTypeId": google.maps.MapTypeId.ROADMAP
-	};
+		var cdc = com.dinfogarneau.cours526;
 
-	// Création de la carte Google (avec les options)
-	// tout en spécifiant dans quel élément HTML elle doit être affichée.
-	cdc.carte = new google.maps.Map(document.getElementById("carte-canvas"), optionsCarte);
-	// Utilisation de la position par défaut.
-	var positionInit = new google.maps.LatLng(cdc.latDefaut, cdc.longDefaut);
-	// Centrage de la carte sur la bonne coordonnée.
-	cdc.carte.setCenter(positionInit);
+		// Object JSON pour les options de la carte (sans la position initiale).
+		var optionsCarte = {
+			"zoom": 14,
+			"mapTypeId": google.maps.MapTypeId.ROADMAP
+		};
 
-	// Est-ce que le navigateur supporte la géolocalisation ?
-	if ( typeof navigator.geolocation != "undefined" ) {
-		console.log('Le navigateur supporte la géolocalisation.');
-		// Tentative de récupération de la position du visiteur (une autorisation de l'utilisateur est nécessaire).
-		navigator.geolocation.getCurrentPosition(cdc.getCurrentPositionSuccess,cdc.getCurrentPositionError, {});
-	} else {
-		// Pas de support de la géolocalisation.
-		console.log('Le navigateur NE supporte PAS la géolocalisation.');
-	}
-}  // Fin de la fonction "initCarte"
+		// Création de la carte Google (avec les options)
+		// tout en spécifiant dans quel élément HTML elle doit être affichée.
+		cdc.carte = new google.maps.Map(document.getElementById("carte-canvas"), optionsCarte);
+		// Utilisation de la position par défaut.
+		var positionInit = new google.maps.LatLng(cdc.latDefaut, cdc.longDefaut);
+		// Centrage de la carte sur la bonne coordonnée.
+		cdc.carte.setCenter(positionInit);
+
+		// Est-ce que le navigateur supporte la géolocalisation ?
+		if (typeof navigator.geolocation != "undefined") {
+			console.log('Le navigateur supporte la géolocalisation.');
+			// Tentative de récupération de la position du visiteur (une autorisation de l'utilisateur est nécessaire).
+			navigator.geolocation.getCurrentPosition(cdc.getCurrentPositionSuccess, cdc.getCurrentPositionError, {});
+		} else {
+			// Pas de support de la géolocalisation.
+			console.log('Le navigateur NE supporte PAS la géolocalisation.');
+		}
+	} // Fin de la fonction "initCarte"
 
 
 // Fonction appelée lors du succès de la récupération de la position.
-com.dinfogarneau.cours526.getCurrentPositionSuccess = function (position) {	
+com.dinfogarneau.cours526.getCurrentPositionSuccess = function(position) {
 	var cdc = com.dinfogarneau.cours526;
 	// Utilisation de la position de l'utilisateur.
 	console.log('Position obtenue : ' + position.coords.latitude + ', ' + position.coords.longitude);
@@ -86,7 +83,7 @@ com.dinfogarneau.cours526.getCurrentPositionSuccess = function (position) {
 }
 
 // Fonction appelée lors de l'échec (refus ou problème) de la récupération de la position.
-com.dinfogarneau.cours526.getCurrentPositionError = function (erreur) {	
+com.dinfogarneau.cours526.getCurrentPositionError = function(erreur) {
 	var cdc = com.dinfogarneau.cours526;
 	// Utilisation de la position par défaut.
 	console.log('Utilisation de la position par défaut.');
@@ -98,16 +95,12 @@ com.dinfogarneau.cours526.setPositionUtilisateur = function(position) {
 	cdc.utilisateur = cdc.ajouterPlacemark(position, "utilisateur");
 	console.log("Calcul de la distance entre les bornes et l'utilisateur");
 
-	if(cdc.elementsCharges.zap)
-	{
-		for (var i=0; i < cdc.reperes.length; i++) {
+	if (cdc.elementsCharges.zap) {
+		for (var i = 0; i < cdc.reperes.length; i++) {
 			var repere = cdc.reperes[i].placemark;
-			if(google.maps.geometry.spherical.computeDistanceBetween(repere.getPosition(), cdc.utilisateur.getPosition())<5000)
-			{
+			if (google.maps.geometry.spherical.computeDistanceBetween(repere.getPosition(), cdc.utilisateur.getPosition()) < 5000) {
 				repere.setIcon("images/wifi_proche.png");
-			}
-			else
-			{
+			} else {
 				repere.setIcon("images/wifi.png");
 			}
 		}
@@ -116,46 +109,47 @@ com.dinfogarneau.cours526.setPositionUtilisateur = function(position) {
 
 // Fonction responsable d'afficher les repères sur la carte.
 com.dinfogarneau.cours526.afficherReperesCarte = function() {
-	var cdc = com.dinfogarneau.cours526;
-	// Parcours des repères.
-	for (var i=0; i < cdc.reperes.length; i++) {
-		cdc.ajouterZap(cdc.reperes[i]);
-	}	
-}
-// Fonction servant afficher certaines informations suite à l'exécution avec succès de la requête HTTP.
-com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {		
+		var cdc = com.dinfogarneau.cours526;
+		// Parcours des repères.
+		for (var i = 0; i < cdc.reperes.length; i++) {
+			cdc.ajouterZap(cdc.reperes[i]);
+		}
+	}
+	// Fonction servant afficher certaines informations suite à l'exécution avec succès de la requête HTTP.
+com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 	var cdc = com.dinfogarneau.cours526;
 	cdc.arrondissements = [];
+
 	// Document XML retourné.
-	try{
+	try {
 		var docXML = cdc.xhrXmlGet.responseXML;
 		var arrondissements = docXML.getElementsByTagName("Arrondissement");
-	} catch(e) {
+	} catch (e) {
 		alert('Erreur: Impossible de lire les arrondissements');
 		cdc.elementsCharges.arrondissements = null;
 		return;
 	}
-	for(var h = 0; h< arrondissements.length;h++) {
+	for (var h = 0; h < arrondissements.length; h++) {
 		var points = [];
 		var arr = arrondissements[h];
-		
+
 		var concatCoords = "";
 		var listeCoordsSeparees = arr.getElementsByTagName("Geometrie")[0].childNodes;
-		
+
 		// Concaténer les coordonnées séparées (se produit dans Firefox)
-		for (var f = 0; f < listeCoordsSeparees.length; f++){
+		for (var f = 0; f < listeCoordsSeparees.length; f++) {
 			concatCoords += listeCoordsSeparees[f].nodeValue;
 		}
-		
+
 		var m = concatCoords.match(/\([^\(\)]+\)/g);
-		
+
 		if (m !== null) {
 			for (var i = 0; i < m.length; i++) {
 				//match all numeric strings
 				var tmp = m[i].match(/-?\d+\.?\d*/g);
 				if (tmp !== null) {
 					//convert all the coordinate sets in tmp from strings to Numbers and convert to LatLng objects
-					for (var j = 0, tmpArr = []; j < tmp.length; j+=2) {
+					for (var j = 0, tmpArr = []; j < tmp.length; j += 2) {
 						var lat = Number(tmp[j + 1]);
 						var lng = Number(tmp[j]);
 
@@ -166,14 +160,14 @@ com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 				}
 			}
 		}
-		cdc.ajouterArr(arr.getElementsByTagName("Code")[0].firstChild.nodeValue,arr.getElementsByTagName("Nom")[0].firstChild.nodeValue,points);
+		cdc.ajouterArr(arr.getElementsByTagName("Code")[0].firstChild.nodeValue, arr.getElementsByTagName("Nom")[0].firstChild.nodeValue, points);
 	}
 
-	cdc.arrondissements.sort(function(a, b){
+	cdc.arrondissements.sort(function(a, b) {
 		return a.code - b.code;
 	});
 }
-com.dinfogarneau.cours526.ajouterArr = function(code,nom,points) {
+com.dinfogarneau.cours526.ajouterArr = function(code, nom, points)  {
 	var arrPoly = new google.maps.Polygon({
 		paths: points,
 		strokeColor: '#FF0000',
@@ -185,9 +179,13 @@ com.dinfogarneau.cours526.ajouterArr = function(code,nom,points) {
 	var cdc = com.dinfogarneau.cours526;
 
 	arrPoly.setMap(cdc.carte);
-	cdc.arrondissements.push({"code": Number(code), "nom":nom, "polygone": arrPoly});
+	cdc.arrondissements.push({
+		"code": Number(code),
+		"nom": nom,
+		"polygone": arrPoly
+	});
 }
-com.dinfogarneau.cours526.ajouterZap = function(repere) {
+com.dinfogarneau.cours526.ajouterZap = function(repere)  {
 	var cdc = com.dinfogarneau.cours526;
 	// Position du repère.
 	var posRepere = new google.maps.LatLng(repere.lat, repere.long);
@@ -195,7 +193,7 @@ com.dinfogarneau.cours526.ajouterZap = function(repere) {
 	var options = {
 		"clickable": true,
 		"title": repere.nomBati
-		};
+	};
 
 	// Création du repère sur la carte.
 	repere.placemark = cdc.ajouterPlacemark(posRepere, "zap", options);
@@ -203,27 +201,25 @@ com.dinfogarneau.cours526.ajouterZap = function(repere) {
 	google.maps.event.addListener(repere.placemark, "click", function() {
 		console.log("affichage de l'infowindow par le repère");
 		cdc.preparerInfoWindow(repere);
-	
 	});
 }
 
-com.dinfogarneau.cours526.ajouterPlacemark = function(position, type, options) {
+com.dinfogarneau.cours526.ajouterPlacemark = function(position, type, options)  {
 	var opts;
-	if(options == null) {
-		opts = {};	
-	}
-	else {
+	if (options == null) {
+		opts = {};
+	} else {
 		opts = options;
 	}
 	opts.position = position;
 	opts.map = com.dinfogarneau.cours526.carte;
-	switch(type) {
+	switch (type) {
 		case "zap":
-			opts.icon="images/wifi.png";
+			opts.icon = "images/wifi.png";
 			break;
 		case "utilisateur":
 			opts.title = "Vous êtes ici";
-			opts.icon="images/smiley_happy.png";
+			opts.icon = "images/smiley_happy.png";
 			break;
 	}
 	return new google.maps.Marker(opts);
@@ -232,31 +228,26 @@ com.dinfogarneau.cours526.ajouterPlacemark = function(position, type, options) 
 // Fonction appelée pour gérer le click sur un repère.
 com.dinfogarneau.cours526.preparerInfoWindow = function(repere) {
 	var cdc = com.dinfogarneau.cours526;
-	if(repere.avis.length == 0)
-	{
+	if (repere.avis.length == 0) {
 		cdc.chargerDonneesAvis(repere);
-	}
-	else
-	{
+	} else {
 		cdc.afficherInfoWindow(repere);
 	}
 }
-com.dinfogarneau.cours526.afficherInfoWindow = function(repere, avecFormulaire){
+com.dinfogarneau.cours526.afficherInfoWindow = function(repere, avecFormulaire) {
 	var cdc = com.dinfogarneau.cours526;
-	if(cdc.infoWindow != null)
-	{
+	if (cdc.infoWindow != null) {
 		console.log("Fermeture de l'infowindow");
 		cdc.infoWindow.close();
 	}
-	if(avecFormulaire == null)
-	{
+	if (avecFormulaire == null) {
 		avecFormulaire = true;
 	}
 
 	console.log("Création de l'infowindow");
 	cdc.infoWindow = new google.maps.InfoWindow({
-			content: cdc.getInfoWindow(repere, avecFormulaire)
-		});
+		content: cdc.getInfoWindow(repere, avecFormulaire)
+	});
 
 	cdc.infoWindow.open(cdc.carte, repere.placemark);
 
@@ -280,9 +271,9 @@ com.dinfogarneau.cours526.getInfoWindow = function(repere, avecFormulaire) {
 
 	var divArrond = document.createElement("div");
 	divArrond.appendChild(document.createTextNode(repere.arrond));
-	
+
 	adresse.appendChild(h1NomBati);
-	adresse.appendChild(divNoRue);	
+	adresse.appendChild(divNoRue);
 	adresse.appendChild(divArrond);
 
 	infoWindow.appendChild(adresse);
@@ -300,8 +291,7 @@ com.dinfogarneau.cours526.getInfoWindow = function(repere, avecFormulaire) {
 	divAvis.appendChild(h1AvisUti);
 	divAvis.appendChild(divListeAvis);
 
-	if(avecFormulaire)
-	{
+	if (avecFormulaire) {
 		var h2AvisPerso = document.createElement("h2");
 		h2AvisPerso.appendChild(document.createTextNode("Avis personnel"));
 
@@ -317,17 +307,17 @@ com.dinfogarneau.cours526.getInfoWindow = function(repere, avecFormulaire) {
 		button.appendChild(document.createTextNode("Envoyer"));
 		button.disabled = true;
 
-		textarea.addEventListener("input", function(){
-			button.disabled = (this.value.trim() == "");	
+		textarea.addEventListener("input", function() {
+			button.disabled = (this.value.trim() == "");
 		});
 
 		form.appendChild(textarea);
 		form.appendChild(button);
 
 
-		form.addEventListener("submit",function(e){
+		form.addEventListener("submit", function(e) {
 			e.preventDefault();
-		
+
 			var divChargement = document.createElement("div");
 			divChargement.className = "chargement";
 
@@ -337,16 +327,14 @@ com.dinfogarneau.cours526.getInfoWindow = function(repere, avecFormulaire) {
 
 			divChargement.appendChild(divIcone);
 			this.appendChild(divChargement);
-			
+
 			cdc.envoyerAvisAjax(repere, this);
-			textarea.disabled=true;
-			button.disabled=true;
+			textarea.disabled = true;
+			button.disabled = true;
 		});
 		divAvis.appendChild(h2AvisPerso);
 		divAvis.appendChild(form);
-	}
-	else
-	{
+	} else {
 		divListeAvis.className = divListeAvis.className + " avis-retroaction";
 	}
 
@@ -378,30 +366,32 @@ com.dinfogarneau.cours526.envoyerAvisAjax = function(repere, formulaire) {
 	// Création de l'objet XMLHttpRequest.
 	cdc.xhrJsonPost = new XMLHttpRequest();
 
-	try  {
+	try {
 		cdc.xhrJsonPost = new XMLHttpRequest();
 	} catch (e) {
 		alert('Erreur: Impossible de créer l\'objet XMLHttpRequest');
 		erreur = true;
 	}
-	if(! erreur)
-	{
+	if (!erreur) {
 		var xhr = cdc.xhrJsonPost;
 
 		// Fonction JavaScript à exécuter lorsque l'état de la requête HTTP change.
-		xhr.onreadystatechange = function(){
+		xhr.onreadystatechange = function() {
 			cdc.envoyerAvisAjaxCallback(repere, formulaire);
 		};
-				
+
 		// Contenu de la requête avec la méthode POST.
-		contenuPOST = JSON.stringify({"zap": repere.nom, "message": formulaire["avis"].value.trim()});
-		
+		contenuPOST = JSON.stringify({
+			"zap": repere.nom,
+			"message": formulaire["avis"].value.trim()
+		});
+
 		// Préparation de la requête HTTP-POST en mode asynchrone (true).
 		xhr.open('POST', 'ajax/ajax-json-post.php', true);
-		
+
 		// Type de contenu de la requête.
 		xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-		
+
 		// Envoie de la requête au serveur en lui passant le contenu;
 		// lorsque la requête changera d'état; la fonction "envoyerAvisAjaxCallback" sera appelée.
 		xhr.send(contenuPOST);
@@ -411,42 +401,42 @@ com.dinfogarneau.cours526.envoyerAvisAjax = function(repere, formulaire) {
 
 // Callback de la requête AJAX qui demande et affiche les informations d'un professeur.
 com.dinfogarneau.cours526.envoyerAvisAjaxCallback = function(repere, formulaire) {
-	var cdc = com.dinfogarneau.cours526;
-	var xhr = cdc.xhrJsonPost;
+		var cdc = com.dinfogarneau.cours526;
+		var xhr = cdc.xhrJsonPost;
 
-	// La requête AJAX est-elle complétée (readyState=4) ?
-	if ( xhr.readyState == 4 ) {
+		// La requête AJAX est-elle complétée (readyState=4) ?
+		if (xhr.readyState == 4) {
 
-		// La requête AJAX est-elle complétée avec succès (status=200) ?
-		if ( xhr.status != 200 ) {
-			// Affichage du message d'erreur.
-			alert('Erreur (code=' + xhr.status + '): La requête HTTP n\'a pu être complétée.');		
-		} else {
-			// Création de l'objet JavaScript à partir de l'expression JSON.
-			try { 
-				var reponse = JSON.parse( xhr.responseText );
-			} catch (e) {
-				alert('ERREUR: La réponse AJAX n\'est pas une expression JSON valide.');
-				// Fin de la fonction.
-				return;
-			}
-
-			// Y a-t-il eu une erreur côté serveur ?
-			if ( reponse.erreur ) {
+			// La requête AJAX est-elle complétée avec succès (status=200) ?
+			if (xhr.status != 200) {
 				// Affichage du message d'erreur.
-				alert('Erreur: ' + reponse.erreur.message);				
+				alert('Erreur (code=' + xhr.status + '): La requête HTTP n\'a pu être complétée.');
 			} else {
-				var icone = formulaire.lastChild.firstChild;
-				icone.className = icone.className.replace("icone-chargement","").trim();
-				repere.avis.push(reponse);
-				cdc.afficherInfoWindow(repere, false);
+				// Création de l'objet JavaScript à partir de l'expression JSON.
+				try {
+					var reponse = JSON.parse(xhr.responseText);
+				} catch (e) {
+					alert('ERREUR: La réponse AJAX n\'est pas une expression JSON valide.');
+					// Fin de la fonction.
+					return;
+				}
+
+				// Y a-t-il eu une erreur côté serveur ?
+				if (reponse.erreur) {
+					// Affichage du message d'erreur.
+					alert('Erreur: ' + reponse.erreur.message);
+				} else {
+					var icone = formulaire.lastChild.firstChild;
+					icone.className = icone.className.replace("icone-chargement", "").trim();
+					repere.avis.push(reponse);
+					cdc.afficherInfoWindow(repere, false);
+				}
+
 			}
-
 		}
-	}
-}  // Fin de "afficherInfoProfAjaxCallback" 
+	} // Fin de "afficherInfoProfAjaxCallback" 
 
-com.dinfogarneau.cours526.chargerDonneesAvis = function(repere){
+com.dinfogarneau.cours526.chargerDonneesAvis = function(repere) {
 	var cdc = com.dinfogarneau.cours526;
 	// Création de l'objet XMLHttpRequest.
 	cdc.xhrJsonGet = new XMLHttpRequest();
@@ -454,35 +444,35 @@ com.dinfogarneau.cours526.chargerDonneesAvis = function(repere){
 	var xhr = cdc.xhrJsonGet;
 
 	// Fonction JavaScript à exécuter lorsque l'état de la requête HTTP change.
-	xhr.onreadystatechange = function(){
+	xhr.onreadystatechange = function() {
 		cdc.chargerDonneesAvisCallback(repere);
 	}
-	
+
 	// Préparation de la requête HTTP-GET en mode asynchrone (true).
-	xhr.open('GET', 'ajax/ajax-json-get.php?req=avis&borne='+repere.nom, true);
-	
+	xhr.open('GET', 'ajax/ajax-json-get.php?req=avis&borne=' + repere.nom, true);
+
 	// Envoie de la requête au serveur en lui passant null (aucun contenu);
 	// lorsque la requête changera d'état; la fonction "afficherInfoProfAJAX_callback" sera appelée.
 	xhr.send(null);
 }
 
-com.dinfogarneau.cours526.chargerDonneesAvisCallback = function(repere){
+com.dinfogarneau.cours526.chargerDonneesAvisCallback = function(repere) {
 	var cdc = com.dinfogarneau.cours526;
 	var xhr = cdc.xhrJsonGet;
 	// La requête AJAX est-elle complétée (readyState=4) ?
-	if ( xhr.readyState == 4 ) {
+	if (xhr.readyState == 4) {
 
 		// La requête AJAX est-elle complétée avec succès (status=200) ?
-		if ( xhr.status != 200 ) {
+		if (xhr.status != 200) {
 			// Affichage du message d'erreur.
 			var msgErreur = 'Erreur (code=' + xhr.status + '): La requête HTTP n\'a pu être complétée.';
 			alert(msgErreur);
-			
+
 		} else {
 			// Création de l'objet JavaScript à partir de l'expression JSON.
 			// *** Notez l'utilisation de "responseText".
-			try { 
-				repere.avis = JSON.parse( xhr.responseText );
+			try {
+				repere.avis = JSON.parse(xhr.responseText);
 			} catch (e) {
 				alert('ERREUR: La réponse AJAX n\'est pas une expression JSON valide.');
 				// Fin de la fonction.
@@ -490,11 +480,11 @@ com.dinfogarneau.cours526.chargerDonneesAvisCallback = function(repere){
 			}
 
 			// Y a-t-il eu une erreur côté serveur ?
-			if ( repere.avis.erreur ) {
+			if (repere.avis.erreur) {
 				// Affichage du message d'erreur.
 				var msgErreur = 'Erreur: ' + repere.avis.erreur.message;
 				alert(msgErreur);
-				
+
 			} else {
 				console.log("affichage de l'infowindow par le callback");
 				cdc.preparerInfoWindow(repere);
@@ -504,14 +494,12 @@ com.dinfogarneau.cours526.chargerDonneesAvisCallback = function(repere){
 
 }
 
-com.dinfogarneau.cours526.initInterface = function(){
+com.dinfogarneau.cours526.initInterface = function() {
 	var cdc = com.dinfogarneau.cours526;
-	if(cdc.elementsCharges.zap)
-	{	
+	if (cdc.elementsCharges.zap) {
 		cdc.initInterfaceZap();
 	}
-	if(cdc.elementsCharges.arrondissements)
-	{
+	if (cdc.elementsCharges.arrondissements) {
 		cdc.initInterfaceArr();
 	}
 	cdc.initInterfaceRtc();
@@ -519,38 +507,37 @@ com.dinfogarneau.cours526.initInterface = function(){
 	cdc.showInterface();
 }
 
-com.dinfogarneau.cours526.initInterfaceZap = function(){
+com.dinfogarneau.cours526.initInterfaceZap = function() {
 	var cdc = com.dinfogarneau.cours526;
 
 	var liste = document.getElementById("lstZap");
 
-	for(var i = 0; i < cdc.reperes.length; i++){
+	for (var i = 0; i < cdc.reperes.length; i++) {
 		liste.appendChild(cdc.ajouterElemZapInterface(cdc.reperes[i]));
 	}
 }
-com.dinfogarneau.cours526.ajouterElemZapInterface = function(repere){
+com.dinfogarneau.cours526.ajouterElemZapInterface = function(repere) {
 	var cdc = com.dinfogarneau.cours526;
 
-		var li = document.createElement("li");
-		var a = document.createElement("a");
-		a.href="#"+repere.nomBati;
-		a.addEventListener("click", function(e){
-			e.preventDefault();
-			console.log("affichage de l'infowindow par l'onglet");
-			cdc.preparerInfoWindow(repere);
-		});
-		a.appendChild(document.createTextNode(repere.nomBati));
-		li.appendChild(a);
-		return li;
+	var li = document.createElement("li");
+	var a = document.createElement("a");
+	a.href = "#" + repere.nomBati;
+	a.addEventListener("click", function(e) {
+		e.preventDefault();
+		console.log("affichage de l'infowindow par l'onglet");
+		cdc.preparerInfoWindow(repere);
+	});
+	a.appendChild(document.createTextNode(repere.nomBati));
+	li.appendChild(a);
+	return li;
 }
 
 
-com.dinfogarneau.cours526.initInterfaceArr = function(){
+com.dinfogarneau.cours526.initInterfaceArr = function() {
 	var cdc = com.dinfogarneau.cours526;
 
 	var panneau = document.getElementById("lstArr");
-	for(var i = 0; i < cdc.arrondissements.length; i++)
-	{
+	for (var i = 0; i < cdc.arrondissements.length; i++) {
 		var arr = cdc.arrondissements[i];
 
 		var label = document.createElement("label");
@@ -559,85 +546,77 @@ com.dinfogarneau.cours526.initInterfaceArr = function(){
 		input.checked = true;
 		input.value = i;
 
-		input.addEventListener("change", function(){
+		input.addEventListener("change", function() {
 			cdc.arrondissements[this.value].polygone.setVisible(this.checked);
 		});
 
-		label.addEventListener("mouseover", function(){
+		label.addEventListener("mouseover", function() {
 			cdc.arrondissements[this.firstChild.value].polygone.setOptions({
-				visible:true,
+				visible: true,
 				strokeColor: '#0000FF',
 				fillColor: '#0000FF'
-			});			
+			});
 		});
-		label.addEventListener("mouseout", function(){
+		label.addEventListener("mouseout", function() {
 			cdc.arrondissements[this.firstChild.value].polygone.setOptions({
 				strokeColor: '#FF0000',
 				fillColor: '#FF0000',
-				visible:this.firstChild.checked
-			});			
+				visible: this.firstChild.checked
+			});
 		});
 		label.appendChild(input);
 		label.appendChild(document.createTextNode(arr.code + " - " + arr.nom));
 
 		panneau.appendChild(label);
 	}
-	document.getElementById("selectAll").addEventListener("click", function(e){
+	document.getElementById("selectAll").addEventListener("click", function(e) {
 		e.preventDefault();
 		var inputs = document.getElementById("lstArr").getElementsByTagName("input");
-		for(var i = 0; i < inputs.length; i++)
-		{
+		for (var i = 0; i <  inputs.length; i++) {
 			inputs[i].checked = true;
 			inputs[i].dispatchEvent(new Event("change"));
 		}
 	});
-	document.getElementById("unselectAll").addEventListener("click", function(e){
+	document.getElementById("unselectAll").addEventListener("click", function(e) {
 		e.preventDefault();
 		var inputs = document.getElementById("lstArr").getElementsByTagName("input");
-		for(var i = 0; i < inputs.length; i++)
-		{
+		for (var i = 0; i <  inputs.length; i++) {
 			inputs[i].checked = false;
 			inputs[i].dispatchEvent(new Event("change"));
 		}
 	});
 }
 
-com.dinfogarneau.cours526.initInterfaceRtc = function()
-{
+com.dinfogarneau.cours526.initInterfaceRtc = function() {
 	var cdc = com.dinfogarneau.cours526;
 	cdc.rtc = new google.maps.KmlLayer({
 		url: "http://webequinox.net/kml/rtc-trajets.kml",
 		preserveViewport: true
 	});
-	document.getElementById("chkBoxRtc").addEventListener("change", function(){
-		if(this.checked)
-		{
+	document.getElementById("chkBoxRtc").addEventListener("change", function() {
+		if (this.checked) {
 			cdc.rtc.setMap(cdc.carte);
-		}	
-		else
-		{
+		} else {
 			cdc.rtc.setMap();
 		}
 	});
 }
-com.dinfogarneau.cours526.initLiens = function(){
+com.dinfogarneau.cours526.initLiens = function() {
 	var panneau = document.getElementById("panneau");
 
 	var nav = panneau.getElementsByClassName("nav-onglets")[0];
-	
+
 	var liens = nav.getElementsByClassName("lien");
 
-	for (var i = 0; i< liens.length; i++)
-	{
+	for (var i = 0; i < liens.length; i++) {
 		var lien = liens[i].getElementsByTagName("a")[0];
 
-		lien.addEventListener("click",function(e){
+		lien.addEventListener("click", function(e) {
 			e.preventDefault();
 
 			var courants = nav.getElementsByClassName("courant");
-			for(var j = 0; j< courants.length; j++)
-			{
-				courants[j].className = courants[j].className.replace("courant","").trim();
+			for (var j = 0; j < courants.length; j++) {
+				courants[j].className = courants[j].className.replace("courant", "").trim();
 			}
 
 			var parent = this.parentNode;
@@ -645,20 +624,17 @@ com.dinfogarneau.cours526.initLiens = function(){
 
 			var onglets = panneau.getElementsByClassName("onglet");
 			for (var i = 0; i < onglets.length; i++) {
-				onglets[i].className = onglets[i].className.replace("ouvert","ferme");
+				onglets[i].className = onglets[i].className.replace("ouvert", "ferme");
 			};
-			var onglet = document.getElementById(this.getAttribute("href").replace("#",""));
-			onglet.className = onglet.className.replace("ferme","ouvert");
+			var onglet = document.getElementById(this.getAttribute("href").replace("#", ""));
+			onglet.className = onglet.className.replace("ferme", "ouvert");
 		});
 	}
-	panneau.getElementsByClassName("fermer")[0].addEventListener("click", function(e){
+	panneau.getElementsByClassName("fermer")[0].addEventListener("click", function(e) {
 		e.preventDefault();
-		if(panneau.className.search("panneau-ouvert") > -1)
-		{
+		if (panneau.className.search("panneau-ouvert") > -1) {
 			panneau.className = panneau.className.replace("panneau-ouvert", "panneau-ferme");
-		}
-		else
-		{
+		} else {
 			panneau.className = panneau.className.replace("panneau-ferme", "panneau-ouvert");
 		}
 	});
