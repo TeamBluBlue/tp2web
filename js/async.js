@@ -1,104 +1,103 @@
-// Fonction responsable des traitements post-chargement.
+// Fonction responsable des traitements post-chargement
 com.dinfogarneau.cours526.traitementPostChargement = function() {
 	var cdc = com.dinfogarneau.cours526;
 	console.log('Traitement post-chargement.');
-
-	// Appel de la fonction qui initialise la carte.
+	
+	// Charger la carte Google Maps
 	console.log('Affichage de la carte');
 	cdc.initCarte();
-
+	
+	// Charger les ZAP seulement s'ils ont été chargés
 	if (cdc.elementsCharges.zap) {
 		console.log('Affichage des repères');
 		cdc.afficherReperesCarte();
 	}
-
+	
+	// Charger les arrondissements seulement s'ils ont été chargés
 	if (cdc.elementsCharges.arrondissements) {
 		console.log('Affichage des arrondissements');
 		cdc.afficherArrondissementsCarte();
 	}
-
+	
+	// Charger l'interface HTML
 	console.log('Interface HTML');
 	cdc.initInterface();
 }
 
-// Référence à la carte Google (variable globale).
+// Objet Map représentant la carte Google Maps de l'application
 com.dinfogarneau.cours526.carte = null;
-// Référence à la XmlHttpRequest pour l'envoi d'avis
+// Objet XHR qui permet de retourner des données au format JSON (pour l'envoi
+// et la réception d'avis) à l'aide d'une requête POST
 com.dinfogarneau.cours526.xhrJsonPost = null;
-
-// Référence vers InfoWindow qui sera ouverte dans l'application (il n'y en aura qu'une seul d'ouverte à la fois)
+// Référence vers InfoWindow qui sera ouverte dans l'application
+// (il n'y en aura qu'une seule d'ouverte à la fois)
 com.dinfogarneau.cours526.infoWindow = null;
-
-// Position par défaut (Cégep Garneau).
+// Position par défaut dans la carte (Cégep Garneau)
 com.dinfogarneau.cours526.latDefaut = 46.792517671520045;
 com.dinfogarneau.cours526.longDefaut = -71.26503957969801;
-
 // Position de l'utilisateur
+// Objet LatLng représentant la position de l'utilisateur si elle a été trouvée
 com.dinfogarneau.cours526.utilisateur = null;
-
-// Liste des arrondissments
+// Liste des arrondissments sous forme d'array d'éléments XML
 com.dinfogarneau.cours526.arrondissements = null;
-
-// Carte du RTC
+// Objet KmlLayer contenant les trajets de bus du RTC
 com.dinfogarneau.cours526.rtc = null;
 
-
+// Permet d'initialiser la carte Google Maps de l'application
 com.dinfogarneau.cours526.initCarte = function() {
-		var cdc = com.dinfogarneau.cours526;
+	var cdc = com.dinfogarneau.cours526;
+	var optionsCarte = {
+		"zoom": 14,
+		"mapTypeId": google.maps.MapTypeId.ROADMAP
+	};
+	cdc.carte = new google.maps.Map(document.getElementById("carte-canvas"), optionsCarte);
+	var positionInit = new google.maps.LatLng(cdc.latDefaut, cdc.longDefaut);
+	cdc.carte.setCenter(positionInit);
 
-		// Object JSON pour les options de la carte (sans la position initiale).
-		var optionsCarte = {
-			"zoom": 14,
-			"mapTypeId": google.maps.MapTypeId.ROADMAP
-		};
+	// Si le navigateur supporte la géolocalisation, obtenir la position de l'utilisateur
+	if (typeof navigator.geolocation != "undefined") {
+		console.log('Le navigateur supporte la géolocalisation.');
+		navigator.geolocation.getCurrentPosition(cdc.getCurrentPositionSuccess, cdc.getCurrentPositionError, {});
+	} else {
+		console.log('Le navigateur NE supporte PAS la géolocalisation.');
+	}
+}
 
-		// Création de la carte Google (avec les options)
-		// tout en spécifiant dans quel élément HTML elle doit être affichée.
-		cdc.carte = new google.maps.Map(document.getElementById("carte-canvas"), optionsCarte);
-		// Utilisation de la position par défaut.
-		var positionInit = new google.maps.LatLng(cdc.latDefaut, cdc.longDefaut);
-		// Centrage de la carte sur la bonne coordonnée.
-		cdc.carte.setCenter(positionInit);
-
-		// Est-ce que le navigateur supporte la géolocalisation ?
-		if (typeof navigator.geolocation != "undefined") {
-			console.log('Le navigateur supporte la géolocalisation.');
-			// Tentative de récupération de la position du visiteur (une autorisation de l'utilisateur est nécessaire).
-			navigator.geolocation.getCurrentPosition(cdc.getCurrentPositionSuccess, cdc.getCurrentPositionError, {});
-		} else {
-			// Pas de support de la géolocalisation.
-			console.log('Le navigateur NE supporte PAS la géolocalisation.');
-		}
-	} // Fin de la fonction "initCarte"
-
-
-// Fonction appelée lors du succès de la récupération de la position.
+// Fonction appelée lors du succès de la récupération de la position
+// "position" : position obtenue par la méthode getCurrentPosition
 com.dinfogarneau.cours526.getCurrentPositionSuccess = function(position) {
 	var cdc = com.dinfogarneau.cours526;
-	// Utilisation de la position de l'utilisateur.
 	console.log('Position obtenue : ' + position.coords.latitude + ', ' + position.coords.longitude);
 	var position = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
 	cdc.carte.panTo(position);
 	cdc.setPositionUtilisateur(position);
 }
 
-// Fonction appelée lors de l'échec (refus ou problème) de la récupération de la position.
+// Fonction appelée lors de l'échec de la récupération de la position
+// "erreur" : message d'erreur fourni par la méthode getCurrentPosition
 com.dinfogarneau.cours526.getCurrentPositionError = function(erreur) {
-	var cdc = com.dinfogarneau.cours526;
-	// Utilisation de la position par défaut.
 	console.log('Utilisation de la position par défaut.');
 }
 
+// Permet de 
 com.dinfogarneau.cours526.setPositionUtilisateur = function(position) {
 	var cdc = com.dinfogarneau.cours526;
 
 	cdc.utilisateur = cdc.ajouterPlacemark(position, "utilisateur");
 	console.log("Calcul de la distance entre les bornes et l'utilisateur");
-
+	
+	// Si les ZAP sont chargés, vérifier s'ils sont proches de la position de
+	// l'utilisateur
 	if (cdc.elementsCharges.zap) {
+		// Pour tous les repères disponibles, calculer la distance entre le repère et
+		// la position de l'utilisateur
 		for (var i = 0; i < cdc.reperes.length; i++) {
 			var repere = cdc.reperes[i].placemark;
-			if (google.maps.geometry.spherical.computeDistanceBetween(repere.getPosition(), cdc.utilisateur.getPosition()) < 5000) {
+			
+			// Si le repère est à moins de 5000 mètres de la position de l'utilisateur,
+			// changer l'icône du repère pour indiquer qu'il est proche
+			if (google.maps.geometry.spherical.computeDistanceBetween(repere.getPosition(),
+													cdc.utilisateur.getPosition()) < 5000) {
 				repere.setIcon("images/wifi_proche.png");
 			} else {
 				repere.setIcon("images/wifi.png");
@@ -107,20 +106,21 @@ com.dinfogarneau.cours526.setPositionUtilisateur = function(position) {
 	}
 }
 
-// Fonction responsable d'afficher les repères sur la carte.
+// Permet d'afficher les ZAP sur la carte Google Maps
 com.dinfogarneau.cours526.afficherReperesCarte = function() {
-		var cdc = com.dinfogarneau.cours526;
-		// Parcours des repères.
-		for (var i = 0; i < cdc.reperes.length; i++) {
-			cdc.ajouterZap(cdc.reperes[i]);
-		}
+	var cdc = com.dinfogarneau.cours526;
+
+	// Parcourir les repères pour les ajouter un à un à la carte
+	for (var i = 0; i < cdc.reperes.length; i++) {
+		cdc.ajouterZap(cdc.reperes[i]);
 	}
-	// Fonction servant afficher certaines informations suite à l'exécution avec succès de la requête HTTP.
+}
+
+// Permet d'afficher les arrondissements de Québec sur la carte
 com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 	var cdc = com.dinfogarneau.cours526;
 	cdc.arrondissements = [];
 
-	// Document XML retourné.
 	try {
 		var docXML = cdc.xhrXmlGet.responseXML;
 		var arrondissements = docXML.getElementsByTagName("Arrondissement");
@@ -129,26 +129,35 @@ com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 		cdc.elementsCharges.arrondissements = null;
 		return;
 	}
+	
+	// Parcourir les arrondissements
 	for (var h = 0; h < arrondissements.length; h++) {
 		var points = [];
 		var arr = arrondissements[h];
-
 		var concatCoords = "";
 		var listeCoordsSeparees = arr.getElementsByTagName("Geometrie")[0].childNodes;
 
-		// Concaténer les coordonnées séparées (se produit dans Firefox)
+		// Concaténer les coordonnées séparées du polygone de l'arrondissement
+		// courant (se produit dans Firefox)
 		for (var f = 0; f < listeCoordsSeparees.length; f++) {
 			concatCoords += listeCoordsSeparees[f].nodeValue;
 		}
-
+		
+		// Retourner ce qui est contenu entre deux parenthèses
 		var m = concatCoords.match(/\([^\(\)]+\)/g);
-
+		
+		// Si l'expression régulière a trouvé une correspondance, continuer les traitements
 		if (m !== null) {
+			// Parcourir l'array contenant les multiples coordonnées des points
+			// du polygone
 			for (var i = 0; i < m.length; i++) {
-				//match all numeric strings
+				// Retourner ce qui est un nombre décimal positif ou négatif
 				var tmp = m[i].match(/-?\d+\.?\d*/g);
+				
+				// Si l'expression régulière a trouvé une correspondance, continuer les traitements
 				if (tmp !== null) {
-					//convert all the coordinate sets in tmp from strings to Numbers and convert to LatLng objects
+					// Parcourir tous les nombres décimaux trouvés par groupe de deux
+					// (pour former les coordonnées du polygone)
 					for (var j = 0, tmpArr = []; j < tmp.length; j += 2) {
 						var lat = Number(tmp[j + 1]);
 						var lng = Number(tmp[j]);
@@ -156,17 +165,29 @@ com.dinfogarneau.cours526.afficherArrondissementsCarte = function() {
 						var pos = new google.maps.LatLng(lat, lng);
 						tmpArr.push(pos);
 					}
+					
 					points.push(tmpArr);
 				}
-			}
+			} // Fin du parcours de l'array des coordonnées des points du polygone
 		}
+		
 		cdc.ajouterArr(arr.getElementsByTagName("Code")[0].firstChild.nodeValue, arr.getElementsByTagName("Nom")[0].firstChild.nodeValue, points);
-	}
-
+	} // Fin du parcours des arrondissements
+	
+	// Permet de classer les arrondissements par code
+	// "a" : premier arrondissment à comparer
+	// "b" : deuxième arrondissment à comparer
+	// Retourne un nombre (négatif ou non) qui détermine l'ordre d'apparition
+	// des arrondissements
 	cdc.arrondissements.sort(function(a, b) {
 		return a.code - b.code;
 	});
 }
+
+// Permet d'ajouter le polygone d'un arrondissement sur la carte Google Maps
+// "code" : numéro de l'arrondissement
+// "nom" : nom de l'arrondissement
+// "points" : Array d'objets LatLng qui déterminent les différents points du polygone
 com.dinfogarneau.cours526.ajouterArr = function(code, nom, points)  {
 	var arrPoly = new google.maps.Polygon({
 		paths: points,
@@ -185,9 +206,11 @@ com.dinfogarneau.cours526.ajouterArr = function(code, nom, points)  {
 		"polygone": arrPoly
 	});
 }
+
+// Permet d'ajouter un ZAP à la carte Google Maps
+// "repere" : ZAP à ajouter
 com.dinfogarneau.cours526.ajouterZap = function(repere)  {
 	var cdc = com.dinfogarneau.cours526;
-	// Position du repère.
 	var posRepere = new google.maps.LatLng(repere.lat, repere.long);
 
 	var options = {
@@ -195,7 +218,6 @@ com.dinfogarneau.cours526.ajouterZap = function(repere)  {
 		"title": repere.nomBati
 	};
 
-	// Création du repère sur la carte.
 	repere.placemark = cdc.ajouterPlacemark(posRepere, "zap", options);
 	repere.avis = [];
 	google.maps.event.addListener(repere.placemark, "click", function() {
@@ -204,36 +226,56 @@ com.dinfogarneau.cours526.ajouterZap = function(repere)  {
 	});
 }
 
+// Permet d'ajouter un marqueur dans la carte Google Maps
+// "position" : position du marqueur
+// "type" : type du marqueur ("zap" ou "utilisateur")
+// "options" : objet JSON des options du marqueur
+// Retourne un objet Marker
 com.dinfogarneau.cours526.ajouterPlacemark = function(position, type, options)  {
 	var opts;
+	
+	// Si les options sont inexistantes, créer un groupe d'options vide.
+	// Autrement, utiliser les options fournies
 	if (options == null) {
 		opts = {};
 	} else {
 		opts = options;
 	}
+	
 	opts.position = position;
 	opts.map = com.dinfogarneau.cours526.carte;
+	
 	switch (type) {
+		// Si le marqueur est un zap, mettre l'icône de WiFi
 		case "zap":
 			opts.icon = "images/wifi.png";
 			break;
+		// Si le marqueur est l'utilisateur, mettre l'icône de l'utilisateur
+		// et ajouter un titre
 		case "utilisateur":
 			opts.title = "Vous êtes ici";
 			opts.icon = "images/smiley_happy.png";
 			break;
 	}
+	
 	return new google.maps.Marker(opts);
 }
 
-// Fonction appelée pour gérer le click sur un repère.
+// Fonction appelée pour gérer le clic sur un repère
+// "repere" : ZAP qui a été cliqué
 com.dinfogarneau.cours526.preparerInfoWindow = function(repere) {
 	var cdc = com.dinfogarneau.cours526;
+	
+	// Si les avis de ce ZAP sont vides, charger ses avis.
+	// Autrement, réafficher les avis déjà chargés
 	if (repere.avis.length == 0) {
 		cdc.chargerDonneesAvis(repere);
 	} else {
 		cdc.afficherInfoWindow(repere);
 	}
 }
+
+// Permet d'afficher info-bulle au-dessus 
 com.dinfogarneau.cours526.afficherInfoWindow = function(repere, avecFormulaire) {
 	var cdc = com.dinfogarneau.cours526;
 	if (cdc.infoWindow != null) {

@@ -16,8 +16,10 @@ if (typeof com.dinfogarneau.cours526 == 'undefined') {
 			"async": false
 		},
 		// Objet XHR qui permet de retourner des données au format JSON (pour les ZAP et les avis)
+		// à l'aide d'une requête GET
 		"xhrJsonGet" : null,
 		// Objet XHR qui permet de retourner des données au format XML (pour les arrondissements)
+		// à l'aide d'une requête GET
 		"xhrXmlGet" : null,
 		// Variable qui contient la liste des ZAP sous forme d'objet Javascript
 		"reperes" : null,
