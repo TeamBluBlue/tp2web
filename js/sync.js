@@ -82,11 +82,8 @@ if (typeof com.dinfogarneau.cours526 == 'undefined') {
 		"chargerDonneesZap": function () {
 			var cdc = com.dinfogarneau.cours526;
 			var erreur = false;
-
-			// Création de l'objet XMLHttpRequest.
-			cdc.xhrJsonGet = new XMLHttpRequest();
-
-			// Tentative de création de l'objet "XMLHttpRequest".
+			
+			// Tentative de création de l'objet XMLHttpRequest
 			try {
 				cdc.xhrJsonGet = new XMLHttpRequest();
 			} catch (e) {

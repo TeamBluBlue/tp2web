@@ -275,13 +275,21 @@ com.dinfogarneau.cours526.preparerInfoWindow = function(repere) {
 	}
 }
 
-// Permet d'afficher info-bulle au-dessus 
+// Permet d'afficher une info-bulle au-dessus d'un repère
+// "repere" : repère au-dessus duquel une info-bulle doit être affchée
+// "avecFormulaire" : booléen qui indique si un formulaire doit être
+// affiché dans l'info-bulle
 com.dinfogarneau.cours526.afficherInfoWindow = function(repere, avecFormulaire) {
 	var cdc = com.dinfogarneau.cours526;
+	
+	// Si une info-bulle existe, il faut la fermer
 	if (cdc.infoWindow != null) {
 		console.log("Fermeture de l'infowindow");
 		cdc.infoWindow.close();
 	}
+	
+	// Si la valeur de "avecFormnulaire" est nulle, lui donner
+	// une valeur par défaut de true
 	if (avecFormulaire == null) {
 		avecFormulaire = true;
 	}
@@ -296,6 +304,12 @@ com.dinfogarneau.cours526.afficherInfoWindow = function(repere, avecFormulaire) 
 	// Recentrage de la carte sur le nouveau repère.
 	cdc.carte.panTo(repere.placemark.getPosition());
 }
+
+// Permet de générer un objet infoWindow adapté au repère cliqué
+// "repere" : repère au-dessus duquel une info-bulle doit être affchée
+// "avecFormulaire" : booléen qui indique si un formulaire doit être
+// affiché dans l'info-bulle
+// Retourne un objet infoWindow
 com.dinfogarneau.cours526.getInfoWindow = function(repere, avecFormulaire) {
 	var cdc = com.dinfogarneau.cours526;
 
@@ -332,7 +346,8 @@ com.dinfogarneau.cours526.getInfoWindow = function(repere, avecFormulaire) {
 
 	divAvis.appendChild(h1AvisUti);
 	divAvis.appendChild(divListeAvis);
-
+	
+	// Si l'info-bulle doit contenir un formualaire, le générer
 	if (avecFormulaire) {
 		var h2AvisPerso = document.createElement("h2");
 		h2AvisPerso.appendChild(document.createTextNode("Avis personnel"));
@@ -348,15 +363,18 @@ com.dinfogarneau.cours526.getInfoWindow = function(repere, avecFormulaire) {
 		button.type = "submit";
 		button.appendChild(document.createTextNode("Envoyer"));
 		button.disabled = true;
-
+		
+		// Événement qui permet de désactiver le bouton Envoyer si des espaces blancs
+		// sont entrés dans la zone de texte
 		textarea.addEventListener("input", function() {
 			button.disabled = (this.value.trim() == "");
 		});
 
 		form.appendChild(textarea);
 		form.appendChild(button);
-
-
+		
+		// Événement qui permet d'envoyer un avis quand le bouton Envoyer
+		// du formulaire est cliqué
 		form.addEventListener("submit", function(e) {
 			e.preventDefault();
 
@@ -379,14 +397,15 @@ com.dinfogarneau.cours526.getInfoWindow = function(repere, avecFormulaire) {
 	} else {
 		divListeAvis.className = divListeAvis.className + " avis-retroaction";
 	}
-
-
-
+	
 	infoWindow.appendChild(divAvis);
 
 	return infoWindow;
 }
 
+// Permet d'afficher les avis existants d'un repère
+// "repère" : repère dont les avis doivent être affichés
+// Retourne un élément HTML "div" contenant les avis
 com.dinfogarneau.cours526.getDomAvis = function(repere) {
 	var div = document.createElement("div");
 
@@ -400,164 +419,173 @@ com.dinfogarneau.cours526.getDomAvis = function(repere) {
 	return div;
 }
 
+// Permet d'envoyer un avis en AJAX
+// "repere" : repère sur lequel un avis doit être ajouté
+// "formulaire" : élément HTML "form" utilisé par l'utilisateur
+// pour envoyer l'avis
 com.dinfogarneau.cours526.envoyerAvisAjax = function(repere, formulaire) {
 	var cdc = com.dinfogarneau.cours526;
-
 	var erreur = false;
-
-	// Création de l'objet XMLHttpRequest.
-	cdc.xhrJsonPost = new XMLHttpRequest();
-
+	
+	// Tentative de création de l'objet XMLHttpRequest
 	try {
 		cdc.xhrJsonPost = new XMLHttpRequest();
 	} catch (e) {
 		alert('Erreur: Impossible de créer l\'objet XMLHttpRequest');
 		erreur = true;
 	}
+	
+	// S'il n'y a pas d'erreur, continuer la création de la requête
 	if (!erreur) {
 		var xhr = cdc.xhrJsonPost;
-
-		// Fonction JavaScript à exécuter lorsque l'état de la requête HTTP change.
 		xhr.onreadystatechange = function() {
 			cdc.envoyerAvisAjaxCallback(repere, formulaire);
 		};
 
-		// Contenu de la requête avec la méthode POST.
 		contenuPOST = JSON.stringify({
 			"zap": repere.nom,
 			"message": formulaire["avis"].value.trim()
 		});
 
-		// Préparation de la requête HTTP-POST en mode asynchrone (true).
 		xhr.open('POST', 'ajax/ajax-json-post.php', true);
-
-		// Type de contenu de la requête.
 		xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-
-		// Envoie de la requête au serveur en lui passant le contenu;
-		// lorsque la requête changera d'état; la fonction "envoyerAvisAjaxCallback" sera appelée.
 		xhr.send(contenuPOST);
 	}
-
 }
 
-// Callback de la requête AJAX qui demande et affiche les informations d'un professeur.
+// Fonction callback appelée suite à la réception d'une réponse pour la requête
+// de l'envoi d'un avis
+// "repere" : repère sur lequel un avis devait être ajouté
+// "formulaire" : élément HTML "form" utilisé par l'utilisateur
+// pour envoyer l'avis
 com.dinfogarneau.cours526.envoyerAvisAjaxCallback = function(repere, formulaire) {
-		var cdc = com.dinfogarneau.cours526;
-		var xhr = cdc.xhrJsonPost;
+	var cdc = com.dinfogarneau.cours526;
+	var xhr = cdc.xhrJsonPost;
 
-		// La requête AJAX est-elle complétée (readyState=4) ?
-		if (xhr.readyState == 4) {
+	// Si la requête est complétée (readyState=4)
+	if (xhr.readyState == 4) {
 
-			// La requête AJAX est-elle complétée avec succès (status=200) ?
-			if (xhr.status != 200) {
-				// Affichage du message d'erreur.
-				alert('Erreur (code=' + xhr.status + '): La requête HTTP n\'a pu être complétée.');
+		// Si la requête AJAX n'a pas été complétée avec succès (status autre que 200),
+		// afficher un message d'erreur, autrement poursuivre avec le traitement des données
+		if (xhr.status != 200) {
+			alert('Erreur (code=' + xhr.status + '): La requête HTTP n\'a pu être complétée.');
+		} else {
+			// Création de l'objet JavaScript à partir de l'expression JSON
+			try {
+				var reponse = JSON.parse(xhr.responseText);
+			} catch (e) {
+				alert('ERREUR: La réponse AJAX n\'est pas une expression JSON valide.');
+				return;
+			}
+
+			// Vérifier s'il y a eu une erreur du côté serveur
+			if (reponse.erreur) {
+				alert('Erreur: ' + reponse.erreur.message);
 			} else {
-				// Création de l'objet JavaScript à partir de l'expression JSON.
-				try {
-					var reponse = JSON.parse(xhr.responseText);
-				} catch (e) {
-					alert('ERREUR: La réponse AJAX n\'est pas une expression JSON valide.');
-					// Fin de la fonction.
-					return;
-				}
-
-				// Y a-t-il eu une erreur côté serveur ?
-				if (reponse.erreur) {
-					// Affichage du message d'erreur.
-					alert('Erreur: ' + reponse.erreur.message);
-				} else {
-					var icone = formulaire.lastChild.firstChild;
-					icone.className = icone.className.replace("icone-chargement", "").trim();
-					repere.avis.push(reponse);
-					cdc.afficherInfoWindow(repere, false);
-				}
-
+				var icone = formulaire.lastChild.firstChild;
+				icone.className = icone.className.replace("icone-chargement", "").trim();
+				repere.avis.push(reponse);
+				cdc.afficherInfoWindow(repere, false);
 			}
 		}
-	} // Fin de "afficherInfoProfAjaxCallback" 
-
-com.dinfogarneau.cours526.chargerDonneesAvis = function(repere) {
-	var cdc = com.dinfogarneau.cours526;
-	// Création de l'objet XMLHttpRequest.
-	cdc.xhrJsonGet = new XMLHttpRequest();
-
-	var xhr = cdc.xhrJsonGet;
-
-	// Fonction JavaScript à exécuter lorsque l'état de la requête HTTP change.
-	xhr.onreadystatechange = function() {
-		cdc.chargerDonneesAvisCallback(repere);
 	}
-
-	// Préparation de la requête HTTP-GET en mode asynchrone (true).
-	xhr.open('GET', 'ajax/ajax-json-get.php?req=avis&borne=' + repere.nom, true);
-
-	// Envoie de la requête au serveur en lui passant null (aucun contenu);
-	// lorsque la requête changera d'état; la fonction "afficherInfoProfAJAX_callback" sera appelée.
-	xhr.send(null);
 }
 
+// Permet de charger les avis d'un repère
+// "repere" : repère dont les avis doivent être chargés
+com.dinfogarneau.cours526.chargerDonneesAvis = function(repere) {
+	var cdc = com.dinfogarneau.cours526;
+	
+	// Tentative de création de l'objet XMLHttpRequest
+	try{
+		cdc.xhrJsonGet = new XMLHttpRequest();
+	} catch (e) {
+		alert('Erreur: Impossible de créer l\'objet XMLHttpRequest');
+		erreur = true;
+	}
+	
+	// S'il n'y a pas d'erreur, continuer la création de la requête
+	if (!erreur) {
+		var xhr = cdc.xhrJsonGet;
+		xhr.onreadystatechange = function() {
+			cdc.chargerDonneesAvisCallback(repere);
+		}
+		xhr.open('GET', 'ajax/ajax-json-get.php?req=avis&borne=' + repere.nom, true);
+		xhr.send(null);
+	}
+}
+
+// Fonction callback appelée suite à la réception d'une réponse pour la requête
+// de l'envoi d'un avis
+// "repere" : repère dont les avis devaient être chargés
 com.dinfogarneau.cours526.chargerDonneesAvisCallback = function(repere) {
 	var cdc = com.dinfogarneau.cours526;
 	var xhr = cdc.xhrJsonGet;
-	// La requête AJAX est-elle complétée (readyState=4) ?
+	
+	// Si la requête AJAX est complétée (readyState=4)
 	if (xhr.readyState == 4) {
 
-		// La requête AJAX est-elle complétée avec succès (status=200) ?
+		// Si la requête AJAX n'a pas été complétée avec succès (status autre que 200),
+		// afficher un message d'erreur, autrement poursuivre avec le traitement des données
 		if (xhr.status != 200) {
-			// Affichage du message d'erreur.
 			var msgErreur = 'Erreur (code=' + xhr.status + '): La requête HTTP n\'a pu être complétée.';
 			alert(msgErreur);
 
 		} else {
-			// Création de l'objet JavaScript à partir de l'expression JSON.
-			// *** Notez l'utilisation de "responseText".
+			// Création de l'objet JavaScript à partir de l'expression JSON
 			try {
 				repere.avis = JSON.parse(xhr.responseText);
 			} catch (e) {
 				alert('ERREUR: La réponse AJAX n\'est pas une expression JSON valide.');
-				// Fin de la fonction.
 				return;
 			}
 
-			// Y a-t-il eu une erreur côté serveur ?
+			// S'il n'y a pas d'erreur, continuer la création de la requête
 			if (repere.avis.erreur) {
-				// Affichage du message d'erreur.
 				var msgErreur = 'Erreur: ' + repere.avis.erreur.message;
 				alert(msgErreur);
-
 			} else {
 				console.log("affichage de l'infowindow par le callback");
 				cdc.preparerInfoWindow(repere);
 			}
 		}
 	}
-
 }
 
+// Permet de charger l'interface HTML
 com.dinfogarneau.cours526.initInterface = function() {
 	var cdc = com.dinfogarneau.cours526;
+	
+	// Si les ZAP sont chargés, générer l'élément d'interface contenant les ZAP
 	if (cdc.elementsCharges.zap) {
 		cdc.initInterfaceZap();
 	}
+	
+	// Si les arrondissements sont chargés, générer l'élément d'interface contenant
+	// les arrondissements
 	if (cdc.elementsCharges.arrondissements) {
 		cdc.initInterfaceArr();
 	}
+	
 	cdc.initInterfaceRtc();
 	cdc.initLiens();
 	cdc.showInterface();
 }
 
+// Permet d'écrire la liste des ZAP dans l'interface HTML
 com.dinfogarneau.cours526.initInterfaceZap = function() {
 	var cdc = com.dinfogarneau.cours526;
-
 	var liste = document.getElementById("lstZap");
-
+	
+	// Parcourir les repères pour les ajouter à l'interface HTML
 	for (var i = 0; i < cdc.reperes.length; i++) {
 		liste.appendChild(cdc.ajouterElemZapInterface(cdc.reperes[i]));
 	}
 }
+
+// Permet de générer l'élément HTML dans lequel un ZAP se trouvera
+// "repere" : repère qui doit être placé dans un élément HTML
+// Retourne un élément HTML "li" contenant le ZAP
 com.dinfogarneau.cours526.ajouterElemZapInterface = function(repere) {
 	var cdc = com.dinfogarneau.cours526;
 
@@ -571,14 +599,17 @@ com.dinfogarneau.cours526.ajouterElemZapInterface = function(repere) {
 	});
 	a.appendChild(document.createTextNode(repere.nomBati));
 	li.appendChild(a);
+	
 	return li;
 }
 
-
+// Permet d'écrire les arrondissements dans l'interface HTML
 com.dinfogarneau.cours526.initInterfaceArr = function() {
 	var cdc = com.dinfogarneau.cours526;
-
 	var panneau = document.getElementById("lstArr");
+	
+	// Parcourir les arrondissements pour les écrire un à un dans
+	// l'interface HTML
 	for (var i = 0; i < cdc.arrondissements.length; i++) {
 		var arr = cdc.arrondissements[i];
 
